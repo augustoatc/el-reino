@@ -89,8 +89,7 @@
           
           <div id="poemMetadataHeader" class="mb-8 font-mono text-xs border-b border-zinc-800/40 pb-4 flex justify-between items-center">
              <span id="poemBookLabel" class="text-amber-500 uppercase tracking-widest font-bold">EL REINO</span>
-             <span id="poemRenderBadge" class="text-zinc-500 border border-zinc-800 px-2 py-0.5 rounded text-[10px]">render: estandar</span>
-          </div>
+             </div>
 
           <div id="poemContent" class="space-y-6">
             <h2 id="poemTitle" class="text-3xl lg:text-4xl font-light tracking-wide text-zinc-100 uppercase">CARGANDO...</h2>
@@ -194,7 +193,9 @@
       }
       
       document.getElementById('poemBookLabel').className = `font-mono text-xs uppercase tracking-widest font-bold ${bookTextColor}`;
-      document.getElementById('poemRenderBadge').textContent = `render: ${poema.tipo_render || 'estandar'}`;
+      
+      // Se ha eliminado/comentado la línea que actualizaba poemRenderBadge para evitar errores:
+      // document.getElementById('poemRenderBadge').textContent = `render: ${poema.tipo_render || 'estandar'}`;
 
       // 2. Renderizar Título del Poema
       document.getElementById('poemTitle').textContent = poema.title || 'SIN TÍTULO';
@@ -415,6 +416,7 @@
       });
     }
 
+    // --- RENDERIZADO DE COMENTARIOS ---
     function renderComments() {
       const container = document.getElementById('commentsContainer');
       if (!container) return;
