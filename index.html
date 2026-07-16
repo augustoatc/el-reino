@@ -10,7 +10,15 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { serif: ['"Source Serif 4"', 'Lora', 'serif'] } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"Source Serif 4"', 'Lora', 'serif']
+                    }
+                }
+            }
+        }
     </script>
 
     <style>
@@ -20,7 +28,6 @@
         
         .poem-content { line-height: 1.85; }
 
-        /* COLLAGE MEJORADO */
         .collage-canvas {
             position: relative; width: 100%; min-height: 480px;
             background: radial-gradient(circle at center, rgba(234, 179, 8, 0.08), transparent 70%);
@@ -95,6 +102,7 @@
   </div>
 
   <script>
+    // === SUPABASE (solo una vez) ===
     const supabase = window.supabase.createClient(
       "https://kpvucfktjnuqltuvgflx.supabase.co",
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdnVjZmt0am51cWx0dXZnZmx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMjk5MzIsImV4cCI6MjA5OTcwNTkzMn0.qV51Slxgz9pRnlGzLQB404SybQz4gOkDIbwSFnNxD-Q"
@@ -103,12 +111,11 @@
     let isGrid = false;
     let poemsData = [];
 
-    // Cargar poemas desde Supabase
     async function loadPoems() {
       try {
         const { data, error } = await supabase
           .from('poemas')
-          .select('key, title, body, book, binary_code')
+          .select('key, title, body, book')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -117,7 +124,7 @@
         renderGrid();
       } catch (err) {
         console.error("Error al cargar poemas:", err);
-        alert("Error conectando con Supabase. Revisa la consola.");
+        alert("Error al conectar con Supabase. Revisa que los permisos (RLS) estén habilitados.");
       }
     }
 
@@ -151,7 +158,6 @@
       document.getElementById('poemBookLabel').textContent = poem.book || 'EL REINO';
       
       const container = document.getElementById('poemBodyContainer');
-      container.innerHTML = '';
       container.textContent = poem.body || "Sin contenido disponible.";
     }
 
