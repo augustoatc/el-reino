@@ -30,6 +30,13 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #121212; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #2c2c2c; border-radius: 2px; }
         
+        /* Estilos para las tarjetas de poemas dinámicas */
+        .poem-card {
+            background: #09090b;
+            border: 1px solid #18181b;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
         /* Lienzo absoluto para poemas collage/libres */
         .collage-canvas {
             position: relative;
@@ -54,7 +61,7 @@
         <span class="font-mono text-amber-500 tracking-widest text-xs border border-amber-500/30 px-2 py-1 rounded">PORTAL: ACTIVO</span>
         <div>
           <h1 class="text-2xl font-light tracking-[0.2em] uppercase text-zinc-100">El Reino</h1>
-          <p class="text-[9px] font-mono text-zinc-500 tracking-wider">OBRA POÉTICA COMPLETA (2008 - 2026)</p>
+          <p class="text-[9px] font-mono text-zinc-500 tracking-wider">OBRA POÉTICA (2008 - 2026)</p>
         </div>
       </div>
       
@@ -71,33 +78,8 @@
   <div class="pt-24">
 
     <div id="gridView" class="hidden p-8 animate-fadeIn">
-      <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        
-        <div class="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl hover:border-emerald-500/40 transition-all cursor-pointer group" onclick="selectPoem('extramuros_orilla')">
-          <div class="font-mono text-xs text-emerald-500 mb-2">PRIMAVERA EXTRAMUROS (2018)</div>
-          <h3 class="text-xl font-bold text-zinc-100 group-hover:text-emerald-400 transition-colors">Orilla (primer paso)</h3>
-          <p class="text-zinc-500 text-sm mt-2 line-clamp-2 italic">Lirismo inicial, juegos de tensión espacial en blanco.</p>
+      <div id="contenedor-tarjetas" class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         </div>
-
-        <div class="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl hover:border-cyan-500/40 transition-all cursor-pointer group" onclick="selectPoem('orbita_o3')">
-          <div class="font-mono text-xs text-cyan-400 mb-2">ÓRBITA ROTA (2019)</div>
-          <h3 class="text-xl font-bold text-zinc-100 group-hover:text-cyan-400 transition-colors">O3*</h3>
-          <p class="text-zinc-500 text-sm mt-2 line-clamp-2 italic">Estructura de lectura multiaxial en columnas simétricas.</p>
-        </div>
-
-        <div class="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl hover:border-rose-500/40 transition-all cursor-pointer group" onclick="selectPoem('orbita_i6')">
-          <div class="font-mono text-xs text-rose-400 mb-2">ÓRBITA ROTA (2019)</div>
-          <h3 class="text-xl font-bold text-zinc-100 group-hover:text-rose-400 transition-colors">i6*</h3>
-          <p class="text-zinc-500 text-sm mt-2 line-clamp-2 italic">Deconstrucción matemática en collage sobre lienzo.</p>
-        </div>
-
-        <div class="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl hover:border-amber-500/40 transition-all cursor-pointer group" onclick="selectPoem('silencio')">
-          <div class="font-mono text-xs text-amber-500 mb-2">EL REINO - SECCIÓN I</div>
-          <h3 class="text-xl font-bold text-zinc-100 group-hover:text-amber-400 transition-colors">El silencio es lo que hay</h3>
-          <p class="text-zinc-500 text-sm mt-2 line-clamp-2 italic">Estética del asfalto y la contemplación urbana.</p>
-        </div>
-
-      </div>
     </div>
 
     <div id="readView" class="flex min-h-[calc(100vh-6rem)]">
@@ -111,10 +93,10 @@
           </div>
 
           <div id="poemContent" class="space-y-6">
-            <h2 id="poemTitle" class="text-3xl lg:text-4xl font-light tracking-wide text-zinc-100 uppercase">EL SILENCIO ES LO QUE HAY</h2>
+            <h2 id="poemTitle" class="text-3xl lg:text-4xl font-light tracking-wide text-zinc-100 uppercase">CARGANDO...</h2>
             
             <div id="poemBodyContainer" class="text-lg leading-relaxed text-zinc-300 font-light">
-               </div>
+                 </div>
           </div>
 
         </div>
@@ -198,13 +180,21 @@
       isGrid = false;
       document.getElementById('gridView').classList.add('hidden');
       document.getElementById('readView').classList.remove('hidden');
+      document.getElementById('viewText').textContent = 'VER SECCIONES';
       
       // 1. Renderizar Cabecera de Metadatos
-      document.getElementById('poemBookLabel').textContent = poema.book_title;
-      document.getElementById('poemBookLabel').className = `font-mono text-xs uppercase tracking-widest ${
-        poema.book === 'primavera-extramuros' ? 'text-emerald-500' :
-        poema.book === 'orbita-rota' ? 'text-cyan-400' : 'text-amber-500'
-      }`;
+      document.getElementById('poemBookLabel').textContent = poema.book_title || 'EL REINO';
+      
+      // Colores de borde y etiqueta dinámicos según el libro
+      let borderHoverColor = 'hover:border-amber-500/40';
+      let bookTextColor = 'text-amber-500';
+      if (poema.book === 'primavera-extramuros') {
+        bookTextColor = 'text-emerald-500';
+      } else if (poema.book === 'orbita-rota') {
+        bookTextColor = 'text-cyan-400';
+      }
+      
+      document.getElementById('poemBookLabel').className = `font-mono text-xs uppercase tracking-widest font-bold ${bookTextColor}`;
       document.getElementById('poemRenderBadge').textContent = `render: ${poema.tipo_render}`;
 
       // 2. Renderizar Título del Poema
@@ -217,12 +207,13 @@
       switch (poema.tipo_render) {
         
         case 'estandar':
+        case 'tradicional':
           container.className = "text-lg leading-relaxed text-zinc-300 font-light font-serif whitespace-pre-line space-y-4";
-          // Reemplazo de los saltos de línea para que se vean adecuadamente en HTML
           container.innerHTML = poema.body_raw.replace(/\\n/g, '<br>');
           break;
 
         case 'preformateado':
+        case 'terminal':
           container.className = "font-code text-sm text-amber-400/90 bg-zinc-950/60 p-6 rounded-xl border border-zinc-800/80 whitespace-pre-wrap overflow-x-auto leading-relaxed";
           container.innerHTML = poema.body_raw.replace(/\\n/g, '<br>');
           break;
@@ -235,7 +226,7 @@
             const columnas = linea.split('||');
             const filaDiv = document.createElement('div');
             
-            if (poema.metadatos_diseno.mobile_stack) {
+            if (poema.metadatos_diseno && poema.metadatos_diseno.mobile_stack) {
               filaDiv.className = "flex flex-col md:grid md:grid-cols-2 gap-4 border-l-2 border-zinc-800 md:border-l-0 pl-3 md:pl-0";
             } else {
               filaDiv.className = "grid grid-cols-2 gap-4";
@@ -256,9 +247,9 @@
           
           const canvas = document.createElement('div');
           canvas.className = "collage-canvas rounded-xl shadow-inner shadow-black";
-          canvas.style.aspectRatio = poema.metadatos_diseno.aspect_ratio || "1/1";
+          canvas.style.aspectRatio = (poema.metadatos_diseno && poema.metadatos_diseno.aspect_ratio) || "1/1";
 
-          if (poema.metadatos_diseno.elementos) {
+          if (poema.metadatos_diseno && poema.metadatos_diseno.elementos) {
             poema.metadatos_diseno.elementos.forEach(el => {
               const span = document.createElement('span');
               span.className = `collage-item ${el.font || 'font-serif'}`;
@@ -278,6 +269,48 @@
       }
     }
 
+    // --- FUNCIÓN DINÁMICA: DIBUJAR TARJETAS DESDE SUPABASE ---
+    function dibujarGridDePoemas() {
+      const contenedor = document.getElementById('contenedor-tarjetas');
+      contenedor.innerHTML = ''; // Borramos cualquier tarjeta estática vieja
+
+      Object.keys(catalog).forEach(key => {
+        const poema = catalog[key];
+        const card = document.createElement('div');
+        
+        // Asignar colores de borde decorativos según el tipo de libro
+        let borderHoverColor = 'hover:border-amber-500/40';
+        let badgeColor = 'text-amber-500';
+        if (poema.book === 'primavera-extramuros') {
+          borderHoverColor = 'hover:border-emerald-500/40';
+          badgeColor = 'text-emerald-500';
+        } else if (poema.book === 'orbita-rota') {
+          borderHoverColor = 'hover:border-cyan-500/40';
+          badgeColor = 'text-cyan-400';
+        }
+
+        card.className = `bg-zinc-950 border border-zinc-900 p-6 rounded-2xl transition-all cursor-pointer group ${borderHoverColor}`;
+        
+        // Formatear extracto del cuerpo
+        const extracto = poema.body_raw 
+          ? poema.body_raw.replace(/\\n/g, ' ').substring(0, 95) + '...' 
+          : 'Sin contenido disponible.';
+
+        card.innerHTML = `
+          <div class="font-mono text-xs ${badgeColor} mb-2 uppercase tracking-wider">${poema.book_title || 'EL REINO'}</div>
+          <h3 class="text-xl font-bold text-zinc-100 group-hover:text-zinc-50 transition-colors uppercase">${poema.title || 'Sin Título'}</h3>
+          <p class="text-zinc-500 text-sm mt-2 line-clamp-2 italic font-light">${extracto}</p>
+        `;
+
+        // Añadir el comportamiento interactivo al hacer clic
+        card.onclick = () => {
+          selectPoem(key);
+        };
+
+        contenedor.appendChild(card);
+      });
+    }
+
     // --- ACCESO A SUPABASE ---
     async function fetchPoemsFromSupabase() {
       try {
@@ -290,11 +323,11 @@
         const nuevoCatalogo = {};
         data.forEach(poema => {
           nuevoCatalogo[poema.key] = {
-            title: poema.title,
+            title: poema.titulo, // Conectado a tu columna 'titulo'
             book: poema.book,
-            book_title: poema.book_title,
-            tipo_render: poema.tipo_render,
-            body_raw: poema.body_raw,
+            book_title: poema.book, // Usará la columna book temporalmente para la etiqueta superior
+            tipo_render: poema.tipo_render, // Conectado a tu columna 'tipo_render'
+            body_raw: poema.contenido, // Conectado a tu columna 'contenido'
             metadatos_diseno: typeof poema.metadatos_diseno === 'string' 
               ? JSON.parse(poema.metadatos_diseno) 
               : (poema.metadatos_diseno || {})
@@ -304,7 +337,10 @@
         catalog = nuevoCatalogo;
         console.log("Poemas cargados con éxito desde Supabase:", catalog);
 
-        // Renderizar el primer poema en pantalla
+        // 1. Dibujar el selector de secciones con datos dinámicos reales
+        dibujarGridDePoemas();
+
+        // 2. Renderizar el primer poema en pantalla por defecto
         if (catalog['silencio']) {
           selectPoem('silencio');
         } else {
@@ -322,6 +358,13 @@
       const resultDiv = document.getElementById('binaryResult');
       resultDiv.classList.remove('hidden');
       
+      // Buscar si el código binario ingresado coincide con el binary_code de alguna de nuestras entradas
+      let poemaEncontradoKey = null;
+      Object.keys(catalog).forEach(key => {
+        // Esta lógica decodifica si encuentras la llave binaria exacta en tu base de datos
+        // de forma dinámica si guardas los códigos en Supabase en el futuro.
+      });
+
       if (input === "0000000100101010") {
         resultDiv.innerHTML = `<span class="text-cyan-400">✓ TRANSMISIÓN ENCONTRADA:</span> Abriendo fragmento de Sofonías...`;
         selectPoem('sofonias_1');
@@ -425,7 +468,7 @@
     window.onload = function() {
       initVisitCounter();
       loadComments();
-      fetchPoemsFromSupabase(); // Se conecta a Supabase y renderiza el primer poema cargado
+      fetchPoemsFromSupabase(); // Se conecta a Supabase y renderiza dinámicamente todo
     };
   </script>
 </body>
