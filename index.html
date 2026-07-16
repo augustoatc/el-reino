@@ -201,8 +201,8 @@
     const SUPABASE_URL = "https://kpvucfktjnuqltuvgflx.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdnVjZmt0am51cWx0dXZnZmx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMjk5MzIsImV4cCI6MjA5OTcwNTkzMn0.qV51Slxgz9pRnlGzLQB404SybQz4gOkDIbwSFnNxD-Q";
 
-    // Inicializamos el cliente oficial
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // Inicializamos el cliente oficial (CORREGIDO: usando SUPABASE_ANON_KEY)
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // --- CATÁLOGO LOCAL DE TEXTOS CON MÉTRICAS DE RENDERIZADO ---
     const catalog = {
@@ -406,7 +406,6 @@ Bienvenido, curioso del papel impreso. Has quebrado la matriz binaria del Reino.
 
     // --- VISITAS DEL REINO (Contador Simple usando LocalStorage / Atributo Estático) ---
     function initVisitCounter() {
-      // Usaremos un contador base con valor aleatorio persistente para mantener la atmósfera mística de la Red
       let visits = localStorage.getItem('reino_visits');
       if (!visits) {
         visits = Math.floor(Math.random() * (1200 - 800) + 800); 
@@ -425,10 +424,10 @@ Bienvenido, curioso del papel impreso. Has quebrado la matriz binaria del Reino.
     // Cargar ecos existentes desde Supabase
     async function loadComments() {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from('Comentarios')
-          .select('key, title, body') // Asumiendo mapeo: key (ID), title (Autor/Seudónimo), body (Comentario)
-          .order('key', { ascending: true }); // Ordenados por clave temporal/ID
+          .select('key, title, body') 
+          .order('key', { ascending: true }); 
 
         if (error) throw error;
 
@@ -457,7 +456,6 @@ Bienvenido, curioso del papel impreso. Has quebrado la matriz binaria del Reino.
       }
 
       localCommentsCache.forEach(c => {
-        // Evitar inyección de HTML malicioso (XSS)
         const safeUser = (c.title || "Anónimo").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         const safeText = (c.body || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -481,11 +479,10 @@ Bienvenido, curioso del papel impreso. Has quebrado la matriz binaria del Reino.
       
       if (!text) return;
 
-      // Generamos una clave única en base a timestamp
       const uniqueKey = String(Date.now());
 
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('Comentarios')
           .insert([
             { key: uniqueKey, title: user, body: text }
@@ -494,7 +491,6 @@ Bienvenido, curioso del papel impreso. Has quebrado la matriz binaria del Reino.
         if (error) throw error;
 
         textField.value = '';
-        // Volvemos a cargar para refrescar
         loadComments();
 
       } catch (err) {
@@ -503,17 +499,19 @@ Bienvenido, curioso del papel impreso. Has quebrado la matriz binaria del Reino.
       }
     }
 
-    // Activar Tiempo Real (Realtime) para escuchar comentarios en vivo de otros usuarios
+    // Activar Tiempo Real (Realtime) para escuchar comentarios en vivo
     function subscribeRealtime() {
-      supabase
+      supabaseClient
         .channel('schema-db-changes')
         .on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'Comentarios' },
           (payload) => {
-            // Añadir el comentario nuevo que se insertó al array y renderizar
-            localCommentsCache.push(payload.new);
-            renderComments();
+            // Validar duplicados antes de insertar en el caché local
+            if (!localCommentsCache.some(c => c.key === payload.new.key)) {
+              localCommentsCache.push(payload.new);
+              renderComments();
+            }
           }
         )
         .subscribe();
@@ -522,7 +520,7 @@ Bienvenido, curioso del papel impreso. Has quebrado la matriz binaria del Reino.
     window.onload = function() {
       initVisitCounter();
       loadComments();
-      subscribeRealtime(); // Activación del canal en tiempo real
+      subscribeRealtime(); 
       selectPoem('silencio');
     };
   </script>
