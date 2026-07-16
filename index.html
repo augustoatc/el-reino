@@ -10,17 +10,7 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        serif: ['"Source Serif 4"', 'Lora', 'serif'],
-                        mono: ['"Space Grotesk"', 'monospace'],
-                        code: ['"Fira Code"', 'monospace'],
-                    }
-                }
-            }
-        }
+        tailwind.config = { theme: { extend: { fontFamily: { serif: ['"Source Serif 4"', 'Lora', 'serif'] } } } }
     </script>
 
     <style>
@@ -30,39 +20,21 @@
         
         .poem-content { line-height: 1.85; }
 
-        /* === COLLAGE MEJORADO === */
+        /* COLLAGE MEJORADO */
         .collage-canvas {
-            position: relative;
-            width: 100%;
-            min-height: 480px;
+            position: relative; width: 100%; min-height: 480px;
             background: radial-gradient(circle at center, rgba(234, 179, 8, 0.08), transparent 70%);
             border: 1px dashed rgba(234, 179, 8, 0.15);
-            overflow: hidden;
-            border-radius: 16px;
+            overflow: hidden; border-radius: 16px;
         }
-        
         .collage-item {
-            position: absolute;
-            transform: translate(-50%, -50%);
+            position: absolute; transform: translate(-50%, -50%);
             transition: all 0.7s cubic-bezier(0.4, 0.0, 0.2, 1);
-            user-select: none;
-            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
-            cursor: default;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.7);
         }
-        
-        .collage-item:hover {
-            transform: translate(-50%, -50%) scale(1.12) rotate(3deg);
-            z-index: 20;
-        }
-
-        @keyframes floatPoem {
-            0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
-            50% { transform: translate(-50%, -50%) translateY(-18px); }
-        }
-        
-        .floating {
-            animation: floatPoem 9s ease-in-out infinite;
-        }
+        .collage-item:hover { transform: translate(-50%, -50%) scale(1.12) rotate(3deg); z-index: 20; }
+        @keyframes floatPoem { 0%,100% { transform: translate(-50%, -50%) translateY(0); } 50% { transform: translate(-50%, -50%) translateY(-18px); } }
+        .floating { animation: floatPoem 9s ease-in-out infinite; }
     </style>
 </head>
 <body class="bg-[#0B0B0C] text-[#E4E4E7] min-h-screen">
@@ -77,8 +49,7 @@
           <p class="text-[10px] font-mono text-zinc-500">Augusto Aníbal Toledo • 2008-2026</p>
         </div>
       </div>
-     
-      <button onclick="toggleView()" id="viewBtn"
+      <button onclick="toggleView()" id="viewBtn" 
               class="px-5 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-xl text-sm font-mono flex items-center gap-2 transition-all">
         <i class="fa-solid fa-grip"></i>
         <span id="viewText">MALLA</span>
@@ -89,15 +60,8 @@
   <div class="pt-24">
     <!-- VISTA MALLA -->
     <div id="gridView" class="hidden p-6 md:p-10">
-      <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl hover:border-amber-500/50 cursor-pointer group" onclick="selectPoem('silencio')">
-          <div class="font-mono text-xs text-amber-500">EL REINO • SECCIÓN I</div>
-          <h3 class="text-xl font-light mt-2 group-hover:text-amber-400">El silencio es lo que hay</h3>
-        </div>
-        <div class="bg-zinc-950 border border-zinc-900 p-6 rounded-2xl hover:border-rose-500/50 cursor-pointer group" onclick="selectPoem('orbita_i6')">
-          <div class="font-mono text-xs text-rose-400">ÓRBITA ROTA</div>
-          <h3 class="text-xl font-light mt-2 group-hover:text-rose-400">i6*</h3>
-        </div>
+      <div id="poemsGrid" class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Se llena desde Supabase -->
       </div>
     </div>
 
@@ -106,12 +70,11 @@
       <main class="flex-1 overflow-y-auto p-8 lg:p-16">
         <div class="max-w-3xl mx-auto" id="poemWrapper">
           <div id="poemMetadataHeader" class="mb-10 flex justify-between items-center text-xs font-mono border-b border-zinc-800 pb-6">
-            <span id="poemBookLabel" class="text-amber-500">EL REINO</span>
+            <span id="poemBookLabel" class="text-amber-500"></span>
             <span id="poemRenderBadge" class="text-zinc-500">render: estándar</span>
           </div>
-          
           <h2 id="poemTitle" class="text-4xl font-light tracking-wide mb-10"></h2>
-          <div id="poemBodyContainer" class="poem-content text-lg text-zinc-300"></div>
+          <div id="poemBodyContainer" class="poem-content text-lg text-zinc-300 whitespace-pre-wrap"></div>
         </div>
       </main>
 
@@ -120,28 +83,12 @@
         <div class="p-6 border-b border-zinc-800">
           <div class="bg-zinc-950 border border-amber-500/20 rounded-2xl p-5 text-center">
             <span class="text-xs font-mono text-zinc-400">HABITANTES EN EL REINO</span>
-            <div id="visitCounter" class="font-mono text-4xl font-bold text-amber-500 mt-2">1423</div>
+            <div id="visitCounter" class="font-mono text-4xl font-bold text-amber-500 mt-2">0000</div>
           </div>
         </div>
-        
         <div class="flex-1 flex flex-col min-h-0 p-6">
-          <h3 class="font-mono text-xs tracking-widest text-amber-500 mb-4 flex items-center gap-2">
-            <i class="fa-regular fa-comment-dots"></i> ECO DE LOS VISITANTES
-          </h3>
+          <h3 class="font-mono text-xs tracking-widest text-amber-500 mb-4">ECO DE LOS VISITANTES</h3>
           <div id="commentsContainer" class="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2"></div>
-          
-          <div class="mt-6 space-y-3">
-            <input id="commentUser" type="text" placeholder="Tu seudónimo" 
-                   class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-amber-500">
-            <div class="relative">
-              <textarea id="commentText" rows="3" placeholder="Escribe tu eco..."
-                        class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-amber-500"></textarea>
-              <button onclick="addComment()" 
-                      class="absolute bottom-4 right-4 text-amber-500 hover:text-amber-400">
-                <i class="fa-solid fa-paper-plane"></i>
-              </button>
-            </div>
-          </div>
         </div>
       </aside>
     </div>
@@ -154,33 +101,41 @@
     );
 
     let isGrid = false;
+    let poemsData = [];
 
-    const catalog = {
-      silencio: {
-        title: "EL SILENCIO ES LO QUE HAY",
-        book_title: "EL REINO - SECCIÓN I",
-        tipo_render: "preformateado",
-        body_raw: `Alto, piedra, acantilado
-eso era yo, también
-pradera, susurro y hoguera...`
-      },
-      orbita_i6: {
-        title: "i6*",
-        book_title: "ÓRBITA ROTA (2019)",
-        tipo_render: "collage_libre",
-        body_raw: "Representación libre de colisiones espaciales.",
-        metadatos_diseno: {
-          aspect_ratio: "16/9",
-          elementos: [
-            { texto: "ʘ_o", x: 20, y: 25, size: "2.2rem", color: "#f59e0b", weight: "bold" },
-            { texto: "el centro no resiste", x: 55, y: 45, size: "1.35rem", color: "#e2e8f0", style: "italic" },
-            { texto: "[ GRAVEDAD CERO ]", x: 30, y: 70, size: "1.1rem", color: "#a1a1aa", font: "font-mono" },
-            { texto: "i = 0 (infinito)", x: 75, y: 35, size: "1.15rem", color: "#ec4899" },
-            { texto: "colisión", x: 15, y: 80, size: "1.05rem", color: "#eab308" }
-          ]
-        }
+    // Cargar poemas desde Supabase
+    async function loadPoems() {
+      try {
+        const { data, error } = await supabase
+          .from('poemas')
+          .select('key, title, body, book, binary_code')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        
+        poemsData = data || [];
+        renderGrid();
+      } catch (err) {
+        console.error("Error al cargar poemas:", err);
+        alert("Error conectando con Supabase. Revisa la consola.");
       }
-    };
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('poemsGrid');
+      grid.innerHTML = '';
+
+      poemsData.forEach(poem => {
+        const card = document.createElement('div');
+        card.className = `bg-zinc-950 border border-zinc-900 p-6 rounded-2xl hover:border-amber-500/50 cursor-pointer group transition-all`;
+        card.innerHTML = `
+          <div class="font-mono text-xs text-amber-500">${poem.book || 'EL REINO'}</div>
+          <h3 class="text-xl font-light mt-2 group-hover:text-amber-400 line-clamp-2">${poem.title}</h3>
+        `;
+        card.onclick = () => selectPoem(poem);
+        grid.appendChild(card);
+      });
+    }
 
     function toggleView() {
       isGrid = !isGrid;
@@ -189,57 +144,20 @@ pradera, susurro y hoguera...`
       document.getElementById('viewText').textContent = isGrid ? 'LECTURA' : 'MALLA';
     }
 
-    function selectPoem(key) {
-      const poema = catalog[key];
-      if (!poema) return;
-
-      // Forzar vista lectura
+    function selectPoem(poem) {
       if (isGrid) toggleView();
 
-      document.getElementById('poemTitle').textContent = poema.title;
-      document.getElementById('poemBookLabel').textContent = poema.book_title || 'EL REINO';
-      document.getElementById('poemRenderBadge').textContent = `render: ${poema.tipo_render}`;
-
+      document.getElementById('poemTitle').textContent = poem.title;
+      document.getElementById('poemBookLabel').textContent = poem.book || 'EL REINO';
+      
       const container = document.getElementById('poemBodyContainer');
       container.innerHTML = '';
-
-      if (poema.tipo_render === 'collage_libre') {
-        container.className = "w-full";
-        const canvas = document.createElement('div');
-        canvas.className = "collage-canvas";
-        canvas.style.aspectRatio = poema.metadatos_diseno.aspect_ratio || "16/9";
-
-        poema.metadatos_diseno.elementos.forEach((el, index) => {
-          const item = document.createElement('span');
-          item.className = `collage-item text-xl ${el.font || ''} floating`;
-          item.style.left = `${el.x}%`;
-          item.style.top = `${el.y}%`;
-          item.style.fontSize = el.size || '1.2rem';
-          item.style.fontWeight = el.weight || '300';
-          item.style.fontStyle = el.style || 'normal';
-          item.style.color = el.color || '#E4E4E7';
-          item.style.animationDelay = `${index * 1.2}s`;
-          item.textContent = el.texto;
-          canvas.appendChild(item);
-        });
-
-        container.appendChild(canvas);
-      } else {
-        // Renderizado normal (puedes expandir después)
-        container.className = "poem-content text-lg text-zinc-300 whitespace-pre-wrap";
-        container.textContent = poema.body_raw;
-      }
+      container.textContent = poem.body || "Sin contenido disponible.";
     }
 
-    // === Funciones pendientes (mantén tus versiones originales) ===
-    function initVisitCounter() { /* tu código */ }
-    async function loadComments() { /* tu código */ }
-    async function addComment() { /* tu código */ }
-
+    // Inicialización
     window.onload = () => {
-      initVisitCounter();
-      loadComments();
-      selectPoem('orbita_i6');   // ← Inicia con el collage mejorado
+      loadPoems();
     };
   </script>
 </body>
