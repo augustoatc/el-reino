@@ -70,11 +70,11 @@
         </div>
     </div>
 
-    <div id="readView" class="flex flex-1 animate-fadeIn">
+    <div id="readView" class="flex flex-1">
       <main class="flex-1 overflow-y-auto p-8 lg:p-16">
         <div class="max-w-3xl mx-auto" id="poemWrapper">
           <div id="poemMetadataHeader" class="mb-10 flex justify-between items-center text-xs font-mono border-b border-zinc-800 pb-6">
-            <span id="poemBookLabel" class="text-amber-500 uppercase">Cargando Libro...</span>
+            <span id="poemBookLabel" class="text-amber-500">Cargando Libro...</span>
             <span id="poemRenderBadge" class="text-zinc-500">render: estándar</span>
           </div>
           <h2 id="poemTitle" class="text-4xl font-light tracking-wide mb-10">Cargando poema...</h2>
@@ -94,8 +94,7 @@
           <h3 class="font-mono text-xs tracking-widest text-amber-500 mb-4 flex items-center gap-2">
             <i class="fa-regular fa-comment-dots"></i> ECO DE LOS VISITANTES
           </h3>
-          <div id="commentsContainer" class="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2">
-              </div>
+          <div id="commentsContainer" class="flex-1 overflow-y-auto space-y-4 custom-scrollbar pr-2"></div>
           
           <div class="mt-6 space-y-3">
             <input id="commentUser" type="text" placeholder="Tu seudónimo" 
@@ -104,7 +103,7 @@
               <textarea id="commentText" rows="3" placeholder="Escribe tu eco..." 
                         class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-amber-500/50 text-white"></textarea>
               <button onclick="addComment()" 
-                      class="absolute bottom-4 right-4 text-amber-500 hover:text-amber-400 p-1">
+                      class="absolute bottom-4 right-4 text-amber-500 hover:text-amber-400">
                 <i class="fa-solid fa-paper-plane"></i>
               </button>
             </div>
@@ -115,11 +114,10 @@
   </div>
 
   <script>
-    // --- CONEXIÓN DE CONFIANZA CON SUPABASE ---
-    const SUPABASE_URL = "https://kpvucfktjnuqltuvgflx.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdnVjZmt0am51cWx0dXZnZmx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMjk5MzIsImV4cCI6MjA5OTcwNTkzMn0.qV51Slxgz9pRnlGzLQB404SybQz4gOkDIbwSFnNxD-Q";
-
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabase = window.supabase.createClient(
+      "https://kpvucfktjnuqltuvgflx.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdnVjZmt0am51cWx0dXZnZmx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMjk5MzIsImV4cCI6MjA5OTcwNTkzMn0.qV51Slxgz9pRnlGzLQB404SybQz4gOkDIbwSFnNxD-Q"
+    );
 
     let isGrid = false;
     let poemsData = [];
@@ -131,29 +129,26 @@
         const { data, error } = await supabase
           .from('poemas')
           .select('key, title, body, book')
-          .order('key', { ascending: true }); // CORREGIDO: cambiamos 'created_at' por la columna 'key' existente
+          .order('key', { ascending: true }); // Ordenados por su identificador numérico/key
 
         if (error) throw error;
-        
         poemsData = data || [];
         renderGrid();
 
-        // Auto-seleccionar primer poema de la base de datos al inicio
         if (poemsData.length > 0) {
-            selectPoem(poemsData[0]);
+          selectPoem(poemsData[0]);
         } else {
-            document.getElementById('poemTitle').textContent = "Vacío";
-            document.getElementById('poemBodyContainer').textContent = "No se encontraron poemas en la base de datos.";
-            document.getElementById('poemBookLabel').textContent = "SISTEMA";
+          document.getElementById('poemTitle').textContent = "Vacío";
+          document.getElementById('poemBodyContainer').textContent = "No hay poemas en la base de datos.";
+          document.getElementById('poemBookLabel').textContent = "SISTEMA";
         }
       } catch (err) {
         console.error("Error al cargar poemas:", err);
         document.getElementById('poemTitle').textContent = "Error de Conexión";
-        document.getElementById('poemBodyContainer').textContent = "Hubo un error al conectar con Supabase. Revisa la consola y las reglas RLS.";
+        document.getElementById('poemBodyContainer').textContent = "Revisa los permisos RLS en Supabase para la tabla 'poemas'.";
       }
     }
 
-    // --- RENDERIZAR VISTA DE MALLA/GRILLA ---
     function renderGrid() {
       const grid = document.getElementById('poemsGrid');
       grid.innerHTML = poemsData.map(poem => `
@@ -164,7 +159,6 @@
       `).join('');
     }
 
-    // --- INTERRUPTOR DE VISTA ---
     function toggleView() {
       isGrid = !isGrid;
       document.getElementById('gridView').classList.toggle('hidden', !isGrid);
@@ -172,7 +166,6 @@
       document.getElementById('viewText').textContent = isGrid ? 'LECTURA' : 'MALLA';
     }
 
-    // --- SELECCIONAR POEMA ---
     function selectPoem(poem) {
       if (isGrid) toggleView();
       document.getElementById('poemTitle').textContent = poem.title;
@@ -185,7 +178,7 @@
       if (poem) selectPoem(poem);
     };
 
-    // --- VISITAS (Contador local atmosférico) ---
+    // --- CONTADOR DE VISITAS ATMOSFÉRICO ---
     function initVisitCounter() {
       let visits = localStorage.getItem('reino_visits');
       if (!visits) {
@@ -199,13 +192,13 @@
       document.getElementById('visitCounter').textContent = String(visits).padStart(4, '0');
     }
 
-    // --- SISTEMA DE COMENTARIOS (ECOS) ---
+    // --- CARGAR COMENTARIOS (CORREGIDO CON TUS COLUMNAS REALES) ---
     async function loadComments() {
       try {
         const { data, error } = await supabase
           .from('Comentarios')
-          .select('key, title, body')
-          .order('key', { ascending: true });
+          .select('id, user, text, created_at')
+          .order('created_at', { ascending: true }); // Orden cronológico usando la columna que tienes
 
         if (error) throw error;
 
@@ -232,11 +225,11 @@
       }
 
       localCommentsCache.forEach(c => {
-        const safeUser = (c.title || "Anónimo").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        const safeText = (c.body || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const safeUser = (c.user || "Anónimo").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        const safeText = (c.text || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
         container.innerHTML += `
-          <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800/60 animate-fadeIn">
+          <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800/60 transition-all">
             <span class="font-mono text-amber-500 text-[10px] tracking-widest uppercase">${safeUser}</span>
             <p class="text-zinc-300 mt-1.5 font-sans leading-relaxed text-sm">${safeText}</p>
           </div>
@@ -246,32 +239,34 @@
       container.scrollTop = container.scrollHeight;
     }
 
+    // --- ENVIAR COMENTARIO (CORREGIDO CON TUS COLUMNAS REALES) ---
     async function addComment() {
       const userField = document.getElementById('commentUser');
       const textField = document.getElementById('commentText');
-      const user = userField.value.trim() || "Anónimo";
-      const text = textField.value.trim();
+      const username = userField.value.trim() || "Anónimo";
+      const commentContent = textField.value.trim();
       
-      if (!text) return;
+      if (!commentContent) return;
 
-      const uniqueKey = String(Date.now());
+      // Generar una ID temporal numérica única para evitar colisiones
+      const numericId = Math.floor(Date.now() / 1000); 
 
       try {
         const { error } = await supabase
           .from('Comentarios')
-          .insert([{ key: uniqueKey, title: user, body: text }]);
+          .insert([{ id: numericId, user: username, text: commentContent }]);
 
         if (error) throw error;
 
         textField.value = '';
-        loadComments();
+        loadComments(); // Recarga la lista de comentarios tras guardar con éxito
       } catch (err) {
         console.error("Error al transmitir el eco:", err.message);
-        alert("El eco no pudo propagarse en la red: " + err.message);
+        alert("El eco no pudo enviarse. Recuerda habilitar la política RLS 'INSERT' para la tabla Comentarios.");
       }
     }
 
-    // Suscripción Realtime para los Ecos de visitantes
+    // Suscripción Realtime para los comentarios
     function subscribeRealtime() {
       supabase
         .channel('schema-db-changes')
@@ -279,7 +274,7 @@
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'Comentarios' },
           (payload) => {
-            if (!localCommentsCache.some(c => c.key === payload.new.key)) {
+            if (!localCommentsCache.some(c => c.id === payload.new.id)) {
               localCommentsCache.push(payload.new);
               renderComments();
             }
@@ -288,7 +283,7 @@
         .subscribe();
     }
 
-    // --- INICIALIZADOR DE CARGA ---
+    // --- CARGAR AL INICIAR ---
     window.onload = () => {
       initVisitCounter();
       loadPoems();
