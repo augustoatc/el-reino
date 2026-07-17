@@ -56,7 +56,7 @@
             font-size: 0.875rem;            /* Reduce el tamaño aproximadamente 2 puntos (de text-lg a text-sm) */
             padding-left: 1.5rem;           /* Añade la sangría al lado izquierdo */
             border-left: 2px solid #3f3f46;  /* Una línea sutil gris vertical que refuerza visualmente la sangría */
-            color: #a1a1aa;                 /* Atenúa un poco el color para darle un aire más elegante y clásico */
+            color: #a1a1aa;                  /* Atenúa un poco el color para darle un aire más elegante y clásico */
             margin-bottom: 1.5rem;          /* Separa el epígrafe del cuerpo del poema */
             font-style: italic;             /* Convierte el bloque en cursiva para diferenciarlo aún más */
             display: block;                 /* Garantiza que se comporte como un bloque independiente */
@@ -68,7 +68,7 @@
   <!-- PORTADA DE BIENVENIDA (Wall of Binary Code) -->
   <div id="welcomeOverlay" class="fixed inset-0 bg-[#0B0B0C] z-[9999] flex items-center justify-center p-8 transition-all duration-700 ease-in-out">
     <div class="max-w-3xl w-full font-code text-sm text-zinc-700/60 select-none leading-relaxed text-justify break-all tracking-[0.15em]">
-      01001100011000010010000001100011011010010110011001101110011001100001001000000<span class="text-amber-600/65 font-medium">SITIO</span>011100110110100101100110010101101101011100000111001001100101001000000111001001100101011100110111010101101101100011101000110000100100000011101010110111001100001001000000<span class="text-amber-600/65 font-medium">LUSION</span>011011100110111101100110011010010110011001101001011001001100001001000000<span class="text-amber-600/65 font-medium">INTERFAZ</span>01111001001000000110001101100001011001100110000101100101011011010110111001100110011010010110011001101001011011100100110000100100000011110010010000001100011011000010110010100101101101011011_<button onclick="entrarAlReino()" class="font-bold text-lg text-amber-500 hover:text-amber-400 transition-all duration-300 mx-1 focus:outline-none cursor-pointer hover:scale-105 active:scale-95 inline-block">ENTRAR</button>_0110111001100100000011001010110110001100001001000000<span class="text-amber-600/65 font-medium">METAMORFOSIS</span>011011100110000101100100011000010010000001110000011000010111001001100101011000110110100100100000<span class="text-amber-600/65 font-medium">NADA</span>01101101011001010110111001101110011011100110111001001011000010010000001110011011010010110001100101011011010110010001001100001011100100110011101110110010110000100000<span class="text-amber-600/65 font-medium">GREGORSAMSA</span>0110010101110011011101000110001001100001000000110110001100001001000000110010101110011011100111000011001010111001001100000100000<span class="text-amber-600/65 font-medium">ESPERA</span>011000010010000001100010010000010110010001100011011001010110110101110000010000001101100011001110011001000000<span class="text-amber-600/65 font-medium">LINEAS</span>01101100011010010110111001100101011000010111001100100000011001
+      01001100011000010010000001100011011010010110011001101110011001100001001000000<span class="text-amber-600/65 font-medium">SITIO</span>011100110110100101100110010101101101011100000111001001100101001000000111001001100101011100110111010101101101100011101000110000100100000011101010110111001100001001000000<span class="text-amber-600/65 font-medium">LUSION</span>011011100110111101100110011010010110011001101001011001011000001001000000<span class="text-amber-600/65 font-medium">INTERFAZ</span>01111001001000000110001101100001011001100110000101100101011011010110111001100110011010010110011001101001011011100100110000100100000011110010010000001100011011000010110010100101101101011011_<button onclick="entrarAlReino()" class="font-bold text-lg text-amber-500 hover:text-amber-400 transition-all duration-300 mx-1 focus:outline-none cursor-pointer hover:scale-105 active:scale-95 inline-block">ENTRAR</button>_0110111001100100000011001010110110001100001001000000<span class="text-amber-600/65 font-medium">METAMORFOSIS</span>011011100110000101100100011000010010000001110000011000010111001001100101011000110110100100100000<span class="text-amber-600/65 font-medium">NADA</span>01101101011001010110111001101110011011100110111001001011000010010000001110011011010010110001100101011011010110010001001100001011100100110011101110110010110000100000<span class="text-amber-600/65 font-medium">GREGORSAMSA</span>0110010101110011011101000110001001100001000000110110001100001001000000110010101110011011100111000011001010111001001100000100000<span class="text-amber-600/65 font-medium">ESPERA</span>011000010010000001100010010000010110010001100011011001010110110101110000010000001101100011001110011001000000<span class="text-amber-600/65 font-medium">LINEAS</span>01101100011010010110111001100101011000010111001100100000011001
     </div>
   </div>
 
@@ -95,74 +95,86 @@
       </div>
     </div>
   </header>
+
   <div class="pt-24">
+    <!-- VISTA GRID -->
     <div id="gridView" class="hidden p-8 animate-fadeIn">
-      <div id="contenedor-tarjetas" class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-         </div>
+      <div id="contenedor-tarjetas" class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </div>
-    <div id="readView" class="flex min-h-[calc(100vh-6rem)]">
-     
-      <main class="flex-1 overflow-y-auto p-10 lg:p-16 flex justify-center items-start">
-        <div class="max-w-3xl w-full" id="poemWrapper">
-         
+
+    <!-- VISTA LECTURA -->
+    <div id="readView" class="min-h-[calc(100vh-6rem)] flex justify-center items-start p-6 lg:p-16">
+      <main class="max-w-3xl w-full flex flex-col gap-12">
+        
+        <!-- SECCIÓN DE CARÁTULA / POEMA -->
+        <div id="poemWrapper" class="w-full">
           <div id="poemMetadataHeader" class="mb-8 font-mono text-xs border-b border-zinc-800/40 pb-4 flex justify-between items-center">
              <span id="poemBookLabel" class="text-amber-500 uppercase tracking-widest font-bold">EL REINO</span>
              <span id="poemRenderBadge" class="text-zinc-500 border border-zinc-800 px-2 py-0.5 rounded text-[10px]">render: estandar</span>
           </div>
           <div id="poemContent" class="space-y-6">
             <h2 id="poemTitle" class="text-3xl lg:text-4xl font-light tracking-wide text-zinc-100 uppercase">CARGANDO...</h2>
-           
-            <div id="poemBodyContainer" class="text-lg leading-relaxed text-zinc-300 font-light">
-                 </div>
+            <div id="poemBodyContainer" class="text-lg leading-relaxed text-zinc-300 font-light"></div>
           </div>
         </div>
-      </main>
-      <aside class="w-96 border-l border-zinc-800 bg-[#0E0E10] hidden lg:flex flex-col justify-between h-[calc(100vh-6rem)] sticky top-24">
-       
-        <div class="p-6 border-b border-zinc-800/60">
-          <div class="flex items-center justify-between mb-6 p-4 bg-zinc-950 border border-zinc-800 rounded-xl">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-              <span class="font-mono text-xs text-zinc-400">Habitantes en la red:</span>
-            </div>
-            <span id="visitCounter" class="font-mono text-sm font-bold text-amber-500">0000</span>
-          </div>
-          <div class="p-4 bg-black border border-amber-500/20 rounded-xl">
+
+        <!-- --- COMPONENTES SECUNDARIOS (EN FILA VERTICAL) --- -->
+        <div class="w-full border-t border-zinc-800/60 pt-10 flex flex-col gap-8">
+          
+          <!-- 1. TERMINAL SOFONÍAS (INGRESO DE CÓDIGOS) -->
+          <div class="p-5 bg-black border border-amber-500/20 rounded-2xl">
             <h4 class="font-mono text-xs text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-2">
               <i class="fa-solid fa-terminal"></i> TERMINAL SOFONÍAS
             </h4>
             <p class="text-zinc-500 text-[11px] mb-3 font-mono">Introduce un código binario del libro para romper el cifrado:</p>
             <div class="flex gap-2">
               <input type="text" id="binaryInput" placeholder="Ej: 00001010"
-                     class="flex-1 bg-zinc-900 border border-zinc-800 rounded px-2 py-1 text-xs font-mono text-amber-400 focus:outline-none focus:border-amber-500">
-              <button onclick="decodeBinary()" class="bg-amber-600 hover:bg-amber-700 text-black font-mono text-xs font-bold px-3 py-1 rounded transition-colors">
+                     class="flex-1 bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-xs font-mono text-amber-400 focus:outline-none focus:border-amber-500">
+              <button onclick="decodeBinary()" class="bg-amber-600 hover:bg-amber-700 text-black font-mono text-xs font-bold px-4 py-2 rounded transition-colors">
                 DESCIFRAR
               </button>
             </div>
-            <div id="binaryResult" class="mt-3 text-xs font-mono text-zinc-400 hidden p-2 bg-zinc-900 rounded border border-zinc-800"></div>
+            <div id="binaryResult" class="mt-3 text-xs font-mono text-zinc-400 hidden p-3 bg-zinc-900 rounded border border-zinc-800"></div>
           </div>
-        </div>
-        <div class="p-6 flex-1 flex flex-col min-h-0 bg-zinc-950/40">
-          <h3 class="font-mono text-xs tracking-wider text-zinc-400 mb-3 flex items-center gap-2">
-            <i class="fa-regular fa-comment-dots text-amber-500"></i> ECO DE LOS VISITANTES (GLOBAL)
-          </h3>
-         
-          <div id="commentsContainer" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-1 text-xs font-light custom-scrollbar"></div>
-          <div class="mt-auto space-y-2">
-            <input type="text" id="commentUser" placeholder="Seudónimo..."
-                   class="w-full px-3 py-2 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 font-mono">
-            <div class="relative">
-              <textarea id="commentText" placeholder="Escribe tu eco en el Reino..." rows="2"
-                        class="w-full pl-3 pr-10 py-2 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 resize-none"></textarea>
-              <button onclick="addComment()" class="absolute right-2 bottom-3 text-amber-500 hover:text-amber-400 p-1">
-                <i class="fa-solid fa-paper-plane text-xs"></i>
-              </button>
+
+          <!-- 2. ECO DE LOS VISITANTES (COMENTARIOS) -->
+          <div class="p-6 bg-zinc-950/40 border border-zinc-800/80 rounded-2xl flex flex-col gap-4">
+            <h3 class="font-mono text-xs tracking-wider text-zinc-400 flex items-center gap-2">
+              <i class="fa-regular fa-comment-dots text-amber-500"></i> ECO DE LOS VISITANTES (GLOBAL)
+            </h3>
+            
+            <!-- Contenedor de Comentarios -->
+            <div id="commentsContainer" class="max-h-60 overflow-y-auto space-y-3 pr-1 text-xs font-light custom-scrollbar"></div>
+            
+            <!-- Formulario de Comentarios -->
+            <div class="space-y-2 border-t border-zinc-900 pt-3">
+              <input type="text" id="commentUser" placeholder="Seudónimo..."
+                     class="w-full px-3 py-2 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 font-mono">
+              <div class="relative">
+                <textarea id="commentText" placeholder="Escribe tu eco en el Reino..." rows="2"
+                          class="w-full pl-3 pr-10 py-2 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 resize-none"></textarea>
+                <button onclick="addComment()" class="absolute right-2 bottom-3 text-amber-500 hover:text-amber-400 p-1">
+                  <i class="fa-solid fa-paper-plane text-xs"></i>
+                </button>
+              </div>
             </div>
           </div>
+
+          <!-- 3. VISITAS (HABITANTES EN LA RED) -->
+          <div class="flex items-center justify-between p-5 bg-zinc-950 border border-zinc-800/80 rounded-2xl">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+              <span class="font-mono text-xs text-zinc-400">Habitantes en la red:</span>
+            </div>
+            <span id="visitCounter" class="font-mono text-sm font-bold text-amber-500">0000</span>
+          </div>
+
         </div>
-      </aside>
+
+      </main>
     </div>
   </div>
+
   <script>
     let isGrid = false;
     // --- CONFIGURACIÓN DE SUPABASE ---
@@ -462,6 +474,7 @@
     ]);
     const globalCommentsNode = gun.get('el_reino_toledo_comments_v2');
     const globalVisitsNode = gun.get('el_reino_toledo_visits_v2');
+    
     // --- CONTADOR DE VISITAS UNIVERSAL ---
     function initVisitCounter() {
       globalVisitsNode.on((data) => {
@@ -477,6 +490,7 @@
         });
       }
     }
+    
     // --- COMENTARIOS UNIVERSALES ---
     const localCommentsCache = {};
     function loadComments() {
@@ -530,6 +544,7 @@
       });
       textField.value = '';
     }
+    
     // --- CARGA INICIAL ---
     window.onload = function() {
       initVisitCounter();
