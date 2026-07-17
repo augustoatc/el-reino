@@ -64,6 +64,14 @@
     </style>
 </head>
 <body class="bg-[#0B0B0C] text-[#E4E4E7] selection:bg-amber-950 selection:text-amber-200">
+
+  <!-- PORTADA DE BIENVENIDA (Wall of Binary Code) -->
+  <div id="welcomeOverlay" class="fixed inset-0 bg-[#0B0B0C] z-[9999] flex items-center justify-center p-8 transition-all duration-700 ease-in-out">
+    <div class="max-w-3xl w-full font-code text-sm text-zinc-700/60 select-none leading-relaxed text-justify break-all tracking-[0.15em]">
+      01001100011000010010000001100011011010010110011001101110011001100001001000000<span class="text-amber-600/65 font-medium">SITIO</span>011100110110100101100110010101101101011100000111001001100101001000000111001001100101011100110111010101101101100011101000110000100100000011101010110111001100001001000000<span class="text-amber-600/65 font-medium">LUSION</span>011011100110111101100110011010010110011001101001011001001100001001000000<span class="text-amber-600/65 font-medium">INTERFAZ</span>01111001001000000110001101100001011001100110000101100101011011010110111001100110011010010110011001101001011011100100110000100100000011110010010000001100011011000010110010100101101101011011_<button onclick="entrarAlReino()" class="font-bold text-lg text-amber-500 hover:text-amber-400 transition-all duration-300 mx-1 focus:outline-none cursor-pointer hover:scale-105 active:scale-95 inline-block">ENTRAR</button>_0110111001100100000011001010110110001100001001000000<span class="text-amber-600/65 font-medium">METAMORFOSIS</span>011011100110000101100100011000010010000001110000011000010111001001100101011000110110100100100000<span class="text-amber-600/65 font-medium">NADA</span>01101101011001010110111001101110011011100110111001001011000010010000001110011011010010110001100101011011010110010001001100001011100100110011101110110010110000100000<span class="text-amber-600/65 font-medium">GREGORSAMSA</span>0110010101110011011101000110001001100001000000110110001100001001000000110010101110011011100111000011001010111001001100000100000<span class="text-amber-600/65 font-medium">ESPERA</span>011000010010000001100010010000010110010001100011011001010110110101110000010000001101100011001110011001000000<span class="text-amber-600/65 font-medium">LINEAS</span>01101100011010010110111001100101011000010111001100100000011001
+    </div>
+  </div>
+
   <header class="h-24 fixed top-0 left-0 right-0 bg-[#0B0B0C]/90 backdrop-blur-md border-b border-zinc-800/80 z-50">
     <div class="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
       <div class="flex items-center gap-4">
@@ -172,8 +180,35 @@
       document.getElementById('viewText').textContent = isGrid ? 'VISTA LECTURA' : 'VER SECCIONES';
     }
 
+    // --- FUNCIÓN DE ENTRADA DESDE LA PORTADA ---
+    function entrarAlReino() {
+      const overlay = document.getElementById('welcomeOverlay');
+      if (overlay) {
+        // Transición de desvanecimiento hacia fuera
+        overlay.classList.add('opacity-0', 'pointer-events-none', 'scale-95');
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 700);
+      }
+      // Redirige directamente a "Secciones" (Grid View)
+      isGrid = true;
+      document.getElementById('gridView').classList.remove('hidden');
+      document.getElementById('readView').classList.add('hidden');
+      document.getElementById('viewText').textContent = 'VISTA LECTURA';
+    }
+
     // --- FUNCIÓN PARA REGRESAR A LA PORTADA PRINCIPAL ---
     function irAPortada() {
+      // Reestablece y vuelve a hacer visible la portada
+      const overlay = document.getElementById('welcomeOverlay');
+      if (overlay) {
+        overlay.style.display = 'flex';
+        // Remueve clases de ocultación con un pequeño retardo para activar la transición
+        setTimeout(() => {
+          overlay.classList.remove('opacity-0', 'pointer-events-none', 'scale-95');
+        }, 50);
+      }
+      
       isGrid = false;
       document.getElementById('gridView').classList.add('hidden');
       document.getElementById('readView').classList.remove('hidden');
@@ -185,7 +220,7 @@
       resultDiv.classList.add('hidden');
       resultDiv.innerHTML = '';
 
-      // Cargar poema por defecto ("silencio" o la primera clave que exista)
+      // Cargar poema por defecto
       if (catalog['silencio']) {
         selectPoem('silencio');
       } else {
@@ -228,7 +263,6 @@
         
         case 'estandar':
         case 'tradicional':
-          // SOLUCIÓN: Cambiado 'whitespace-pre-line' por 'whitespace-normal' para permitir que el estilo del blockquote se aplique correctamente sin romper la estructura HTML
           container.className = "text-lg leading-relaxed text-zinc-300 font-light font-serif whitespace-normal space-y-4";
           container.innerHTML = textoSeguro;
           break;
@@ -296,7 +330,7 @@
       Object.keys(catalog).forEach(key => {
         const poema = catalog[key];
         
-        // FILTRO DE SEGURIDAD INTERNO (Por si acaso un poema oculto se saltó la carga)
+        // FILTRO DE SEGURIDAD INTERNO
         if (poema.binary_code || poema.is_hidden) {
           return; 
         }
@@ -330,7 +364,7 @@
         contenedor.appendChild(card);
       });
     }
-    // --- ACCESO A SUPABASE (CON FILTRADO INTEGRADO) ---
+    // --- ACCESO A SUPABASE ---
     async function fetchPoemsFromSupabase() {
       try {
         const { data, error } = await supabaseClient
@@ -340,8 +374,6 @@
         
         const nuevoCatalogo = {};
         data.forEach(poema => {
-          // --- AQUÍ SE FILTRAN LOS POEMAS BINARIOS Y LOS MARCADOS COMO OCULTOS ---
-          // Solo se procesan y agregan los poemas normales de lectura abierta
           if (poema.binary_code || poema.is_hidden === true) {
              return; 
           }
@@ -352,7 +384,7 @@
             book_title: poema.book,
             tipo_render: poema.tipo_render,
             body_raw: poema.contenido,
-            binary_code: poema.binary_code, // Se mapea por si necesitas validar algo
+            binary_code: poema.binary_code,
             is_hidden: poema.is_hidden,
             metadatos_diseno: typeof poema.metadatos_diseno === 'string'
               ? JSON.parse(poema.metadatos_diseno)
@@ -389,7 +421,6 @@
       resultDiv.innerHTML = `<span class="text-amber-500 animate-pulse">⚡ PROCESANDO CÓDIGO...</span>`;
 
       try {
-        // Hacemos la consulta a la base de datos buscando coincidencia exacta en binary_code
         const { data, error } = await supabaseClient
           .from('poemas')
           .select('*')
@@ -397,12 +428,10 @@
           .single();
 
         if (error || !data) {
-          // Si Supabase no encuentra coincidencia
           resultDiv.innerHTML = `<span class="text-red-400">✗ ERROR DE FLUJO:</span> Código ausente en la memoria de Sofonías.`;
           return;
         }
 
-        // Si lo encuentra, lo metemos dinámicamente al catálogo temporal para poder visualizarlo
         const keyMap = data.key || 'temp_unlocked_poem';
         catalog[keyMap] = {
           title: data.titulo,
@@ -417,7 +446,6 @@
             : (data.metadatos_diseno || {})
         };
 
-        // Informamos del éxito y renderizamos automáticamente el poema desbloqueado
         resultDiv.innerHTML = `<span class="text-cyan-400">✓ TRANSMISIÓN ENCONTRADA:</span> Abriendo fragmento descifrado...`;
         selectPoem(keyMap);
 
