@@ -91,27 +91,33 @@
         </div>
       </div>
       
-      <div class="flex items-center gap-4">
-        <button onclick="toggleView()" id="viewBtn"
+      <div class="flex items-center gap-3">
+        <!-- BOTÓN SECCIONES (GRID) -->
+        <button onclick="changeActiveView('grid')" id="gridNavBtn"
                 class="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-xs font-mono tracking-wider transition-colors flex items-center gap-2">
-          <i class="fa-solid fa-circle-nodes text-amber-500"></i>
-          <span id="viewText">VER SECCIONES</span>
+          <i class="fa-solid fa-circle-nodes text-zinc-500"></i>
+          <span>SECCIONES</span>
+        </button>
+
+        <!-- BOTÓN TERMINAL (TERCERA PANTALLA) -->
+        <button onclick="changeActiveView('terminal')" id="terminalNavBtn"
+                class="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg text-xs font-mono tracking-wider transition-colors flex items-center gap-2">
+          <i class="fa-solid fa-terminal text-amber-500"></i>
+          <span>TERMINAL SOFONÍAS</span>
         </button>
       </div>
     </div>
   </header>
 
   <div class="pt-24">
-    <!-- VISTA GRID -->
+    <!-- PANTALLA 1: GRID DE SECCIONES -->
     <div id="gridView" class="hidden p-8 animate-fadeIn">
       <div id="contenedor-tarjetas" class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </div>
 
-    <!-- VISTA LECTURA -->
+    <!-- PANTALLA 2: LECTURA DE POEMAS (Totalmente Limpia) -->
     <div id="readView" class="min-h-[calc(100vh-6rem)] flex justify-center items-start p-6 lg:p-16">
       <main class="max-w-3xl w-full flex flex-col gap-12">
-        
-        <!-- SECCIÓN DE CARÁTULA / POEMA -->
         <div id="poemWrapper" class="w-full">
           <div id="poemMetadataHeader" class="mb-8 font-mono text-xs border-b border-zinc-800/40 pb-4 flex justify-between items-center">
              <span id="poemBookLabel" class="text-amber-500 uppercase tracking-widest font-bold">EL REINO</span>
@@ -122,56 +128,60 @@
             <div id="poemBodyContainer" class="text-lg leading-relaxed text-zinc-300 font-light"></div>
           </div>
         </div>
+      </main>
+    </div>
 
-        <!-- COMPONENTES SECUNDARIOS ORDENADOS -->
-        <div id="seccionComponentes" class="w-full border-t border-zinc-800/60 pt-10 flex flex-col gap-8 scroll-mt-28">
+    <!-- PANTALLA 3: ENTORNO INTERACTIVO (Terminal, Comentarios y Habitantes) -->
+    <div id="terminalView" class="hidden min-h-[calc(100vh-6rem)] flex justify-center items-start p-6 lg:p-16 animate-fadeIn">
+      <main class="max-w-3xl w-full flex flex-col gap-8">
+        
+        <!-- CABECERA DE LA CONSOLA -->
+        <div class="border-b border-zinc-800/60 pb-4 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-terminal text-amber-500"></i>
+            <h2 class="text-lg font-mono tracking-wider uppercase text-zinc-100">ESPACIO SÍNCRONO</h2>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <span class="font-mono text-xs text-zinc-500">HABITANTES: <span id="visitCounter" class="text-amber-500 font-bold">0000</span></span>
+          </div>
+        </div>
+
+        <!-- 1. TERMINAL SOFONÍAS -->
+        <div class="p-5 bg-black border border-amber-500/20 rounded-2xl">
+          <h4 class="font-mono text-xs text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-code"></i> TERMINAL SOFONÍAS
+          </h4>
+          <p class="text-zinc-500 text-[11px] mb-3 font-mono">Introduce un código binario del libro físico para romper el cifrado:</p>
+          <div class="flex gap-2">
+            <input type="text" id="binaryInput" placeholder="Ej: 00001010"
+                   class="flex-1 bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-xs font-mono text-amber-400 focus:outline-none focus:border-amber-500">
+            <button onclick="decodeBinary()" class="bg-amber-600 hover:bg-amber-700 text-black font-mono text-xs font-bold px-4 py-2 rounded transition-colors">
+              DESCIFRAR
+            </button>
+          </div>
+          <div id="binaryResult" class="mt-3 text-xs font-mono text-zinc-400 hidden p-3 bg-zinc-900 rounded border border-zinc-800"></div>
+        </div>
+
+        <!-- 2. ECO DE LOS VISITANTES (COMENTARIOS) -->
+        <div class="p-6 bg-zinc-950/40 border border-zinc-800/80 rounded-2xl flex flex-col gap-4">
+          <h3 class="font-mono text-xs tracking-wider text-zinc-400 flex items-center gap-2">
+            <i class="fa-regular fa-comment-dots text-amber-500"></i> ECO DE LOS VISITANTES (GLOBAL)
+          </h3>
           
-          <!-- 1. TERMINAL SOFONÍAS (INGRESO DE CÓDIGOS) -->
-          <div class="p-5 bg-black border border-amber-500/20 rounded-2xl">
-            <h4 class="font-mono text-xs text-amber-500 uppercase tracking-widest mb-2 flex items-center gap-2">
-              <i class="fa-solid fa-terminal"></i> TERMINAL SOFONÍAS
-            </h4>
-            <p class="text-zinc-500 text-[11px] mb-3 font-mono">Introduce un código binario del libro para romper el cifrado:</p>
-            <div class="flex gap-2">
-              <input type="text" id="binaryInput" placeholder="Ej: 00001010"
-                     class="flex-1 bg-zinc-900 border border-zinc-800 rounded px-3 py-2 text-xs font-mono text-amber-400 focus:outline-none focus:border-amber-500">
-              <button onclick="decodeBinary()" class="bg-amber-600 hover:bg-amber-700 text-black font-mono text-xs font-bold px-4 py-2 rounded transition-colors">
-                DESCIFRAR
+          <div id="commentsContainer" class="max-h-60 overflow-y-auto space-y-3 pr-1 text-xs font-light custom-scrollbar"></div>
+          
+          <div class="space-y-2 border-t border-zinc-900 pt-3">
+            <input type="text" id="commentUser" placeholder="Seudónimo..."
+                   class="w-full px-3 py-2 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 font-mono">
+            <div class="relative">
+              <textarea id="commentText" placeholder="Escribe tu eco en el Reino..." rows="2"
+                        class="w-full pl-3 pr-10 py-2 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 resize-none"></textarea>
+              <button onclick="addComment()" class="absolute right-2 bottom-3 text-amber-500 hover:text-amber-400 p-1">
+                <i class="fa-solid fa-paper-plane text-xs"></i>
               </button>
             </div>
-            <div id="binaryResult" class="mt-3 text-xs font-mono text-zinc-400 hidden p-3 bg-zinc-900 rounded border border-zinc-800"></div>
           </div>
-
-          <!-- 2. ECO DE LOS VISITANTES (COMENTARIOS) -->
-          <div class="p-6 bg-zinc-950/40 border border-zinc-800/80 rounded-2xl flex flex-col gap-4">
-            <h3 class="font-mono text-xs tracking-wider text-zinc-400 flex items-center gap-2">
-              <i class="fa-regular fa-comment-dots text-amber-500"></i> ECO DE LOS VISITANTES (GLOBAL)
-            </h3>
-            
-            <div id="commentsContainer" class="max-h-60 overflow-y-auto space-y-3 pr-1 text-xs font-light custom-scrollbar"></div>
-            
-            <div class="space-y-2 border-t border-zinc-900 pt-3">
-              <input type="text" id="commentUser" placeholder="Seudónimo..."
-                     class="w-full px-3 py-2 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 font-mono">
-              <div class="relative">
-                <textarea id="commentText" placeholder="Escribe tu eco en el Reino..." rows="2"
-                          class="w-full pl-3 pr-10 py-2 text-xs bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-amber-500/50 resize-none"></textarea>
-                <button onclick="addComment()" class="absolute right-2 bottom-3 text-amber-500 hover:text-amber-400 p-1">
-                  <i class="fa-solid fa-paper-plane text-xs"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. VISITAS (HABITANTES EN LA RED) -->
-          <div class="flex items-center justify-between p-5 bg-zinc-950 border border-zinc-800/80 rounded-2xl">
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-              <span class="font-mono text-xs text-zinc-400">Habitantes en la red:</span>
-            </div>
-            <span id="visitCounter" class="font-mono text-sm font-bold text-amber-500">0000</span>
-          </div>
-
         </div>
 
       </main>
@@ -179,41 +189,50 @@
   </div>
 
   <script>
-    let isGrid = false;
+    // ESTADOS: 'grid' (Secciones), 'read' (Lectura), 'terminal' (Terminal & Comentarios)
+    let activeView = 'read'; 
     const SUPABASE_URL = "https://kpvucfktjnuqltuvgflx.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtwdnVjZmt0am51cWx0dXZnZmx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxMjk5MzIsImV4cCI6MjA5OTcwNTkzMn0.qV51Slxgz9pRnlGzLQB404SybQz4gOkDIbwSFnNxD-Q";
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     let catalog = {};
+
+    function changeActiveView(newView) {
+      activeView = newView;
+      
+      document.getElementById('gridView').classList.toggle('hidden', activeView !== 'grid');
+      document.getElementById('readView').classList.toggle('hidden', activeView !== 'read');
+      document.getElementById('terminalView').classList.toggle('hidden', activeView !== 'terminal');
+      
+      // Actualización visual de los botones superiores
+      const gridBtn = document.getElementById('gridNavBtn');
+      const termBtn = document.getElementById('terminalNavBtn');
+      
+      if (activeView === 'grid') {
+        gridBtn.classList.add('border-zinc-700', 'bg-zinc-800');
+        termBtn.classList.remove('border-zinc-700', 'bg-zinc-800');
+      } else if (activeView === 'terminal') {
+        gridBtn.classList.remove('border-zinc-700', 'bg-zinc-800');
+        termBtn.classList.add('border-zinc-700', 'bg-zinc-800');
+      } else {
+        gridBtn.classList.remove('border-zinc-700', 'bg-zinc-800');
+        termBtn.classList.remove('border-zinc-700', 'bg-zinc-800');
+      }
+    }
     
     function toggleView() {
-      isGrid = !isGrid;
-      document.getElementById('gridView').classList.toggle('hidden', !isGrid);
-      document.getElementById('readView').classList.toggle('hidden', isGrid);
-      document.getElementById('viewText').textContent = isGrid ? 'VISTA LECTURA' : 'VER SECCIONES';
+      // Función remanente para fallback
+      changeActiveView(activeView === 'grid' ? 'read' : 'grid');
     }
 
     function entrarAlReino() {
       cerrarPortada();
-      isGrid = true;
-      document.getElementById('gridView').classList.remove('hidden');
-      document.getElementById('readView').classList.add('hidden');
-      document.getElementById('viewText').textContent = 'VISTA LECTURA';
+      changeActiveView('grid');
     }
 
     function irDirectoATerminal() {
       cerrarPortada();
-      isGrid = false;
-      document.getElementById('gridView').classList.add('hidden');
-      document.getElementById('readView').classList.remove('hidden');
-      document.getElementById('viewText').textContent = 'VER SECCIONES';
-      
-      setTimeout(() => {
-        const seccion = document.getElementById('seccionComponentes');
-        if (seccion) {
-          seccion.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 750);
+      changeActiveView('terminal');
     }
 
     function cerrarPortada() {
@@ -235,11 +254,6 @@
         }, 50);
       }
       
-      isGrid = false;
-      document.getElementById('gridView').classList.add('hidden');
-      document.getElementById('readView').classList.remove('hidden');
-      document.getElementById('viewText').textContent = 'VER SECCIONES';
-      
       document.getElementById('binaryInput').value = '';
       const resultDiv = document.getElementById('binaryResult');
       resultDiv.classList.add('hidden');
@@ -251,15 +265,14 @@
         const keys = Object.keys(catalog);
         if (keys.length > 0) selectPoem(keys[0]);
       }
+      changeActiveView('read');
     }
 
     function selectPoem(key) {
       const poema = catalog[key];
       if (!poema) return;
-      isGrid = false;
-      document.getElementById('gridView').classList.add('hidden');
-      document.getElementById('readView').classList.remove('hidden');
-      document.getElementById('viewText').textContent = 'VER SECCIONES';
+      
+      changeActiveView('read');
       
       document.getElementById('poemBookLabel').textContent = poema.book_title || 'EL REINO';
       
@@ -444,8 +457,11 @@
             : (data.metadatos_diseno || {})
         };
 
-        resultDiv.innerHTML = `<span class="text-cyan-400">✓ TRANSMISIÓN ENCONTRADA:</span> Abriendo fragmento descifrado...`;
-        selectPoem(keyMap);
+        resultDiv.innerHTML = `<span class="text-cyan-400">✓ TRANSMISIÓN ENCONTRADA:</span> Cargado en la biblioteca interna. Redirigiendo a lectura...`;
+        
+        setTimeout(() => {
+          selectPoem(keyMap);
+        }, 1200);
 
       } catch (err) {
         console.error("Error al descifrar:", err.message);
@@ -546,6 +562,7 @@
       initVisitCounter();
       loadComments();
       fetchPoemsFromSupabase();
+      changeActiveView('read'); // Inicia por defecto en vista lectura limpia
     };
   </script>
 </body>
