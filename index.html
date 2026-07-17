@@ -67,6 +67,12 @@
             font-style: italic;
             display: block;
         }
+
+        /* DISEÑO DE SANGRÍA FRANCESA */
+        .sangria-francesa-aplicada {
+            padding-left: 2rem;
+            text-indent: -2rem;
+        }
     </style>
 </head>
 <body class="bg-[#0B0B0C] text-[#E4E4E7] selection:bg-amber-950 selection:text-amber-200">
@@ -260,7 +266,29 @@
       changeActiveView('read');
     }
 
-    // FUNCIÓN UNIFICADA Y CORREGIDA
+    // FUNCIÓN ESCÁNER INTEGRADA, OPTIMIZADA Y COMPATIBLE
+    function aplicarSangriaFrancesa(container) {
+      const versosDOM = container.querySelectorAll('p');
+
+      versosDOM.forEach(verso => {
+        // 1. Creamos un clon invisible absoluto
+        const clon = verso.cloneNode(true);
+        clon.style.position = 'absolute';
+        clon.style.whiteSpace = 'nowrap';
+        clon.style.visibility = 'hidden';
+        clon.style.width = 'auto';
+        document.body.appendChild(clon);
+        
+        // 2. Evaluamos si el ancho en pantalla es menor que su longitud natural sin romper
+        if (verso.offsetWidth < clon.offsetWidth) {
+          verso.classList.add('sangria-francesa-aplicada');
+        }
+        
+        // Limpieza de memoria
+        document.body.removeChild(clon);
+      });
+    }
+
     function selectPoem(key) {
       const poema = catalog[key];
       if (!poema) return;
@@ -282,7 +310,6 @@
       
       bookLabel.className = `font-mono text-xs uppercase tracking-widest font-bold ${bookTextColor}`;
       
-      // Evaluamos el formato o tipo de render para asignar las clases del título
       const renderActual = poema.tipo_render || 'estandar';
       document.getElementById('poemRenderBadge').textContent = `render: ${renderActual}`;
       
@@ -295,26 +322,39 @@
       tituloHTML.textContent = poema.title || 'SIN TÍTULO';
       
       const rawText = poema.body_raw ? String(poema.body_raw) : '';
-      const textoSeguro = rawText.replace(/\\n/g, '<br>').replace(/\n/g, '<br>') || 'Este poema aún no tiene contenido cargado.';
       
       container.innerHTML = ''; 
       
-      // Renderización condicional según la estructura del poema
       switch (renderActual) {
         case 'estandar':
         case 'tradicional':
           container.className = "text-lg leading-relaxed text-zinc-300 font-light font-serif whitespace-normal space-y-4 animate-fadeIn";
-          container.innerHTML = textoSeguro;
+          
+          // Mapeamos las líneas del poema convirtiéndolas en elementos <p> individuales para el escáner
+          const fragmentoEstandar = document.createDocumentFragment();
+          const lineasEstandar = rawText.split(/\\n|\n/);
+          
+          lineasEstandar.forEach(linea => {
+            const pVerso = document.createElement('p');
+            pVerso.innerHTML = linea.trim() || '&nbsp;'; // Mantiene líneas vacías estructurales
+            fragmentoEstandar.appendChild(pVerso);
+          });
+          
+          container.appendChild(fragmentoEstandar);
+          // Ejecutamos el detector de sangría francesa
+          aplicarSangriaFrancesa(container);
           break;
+
         case 'preformateado':
         case 'terminal':
           container.className = "font-code text-sm text-amber-400/90 bg-zinc-950/60 p-6 rounded-xl border border-zinc-800/80 whitespace-pre-wrap overflow-x-auto leading-relaxed space-y-4 animate-fadeIn";
-          container.innerHTML = textoSeguro;
+          container.innerHTML = rawText.replace(/\\n/g, '<br>').replace(/\n/g, '<br>') || 'Este poema aún no tiene contenido.';
           break;
+
         case 'tabular_grid':
           container.className = "flex flex-col gap-4 font-mono text-base text-cyan-100/90 animate-fadeIn";
-          const lineas = rawText.split('\\n');
-          lineas.forEach(linea => {
+          const lineasTabulares = rawText.split('\\n');
+          lineasTabulares.forEach(linea => {
             const columnas = linea.split('||');
             const filaDiv = document.createElement('div');
             if (poema.metadatos_diseno && poema.metadatos_diseno.mobile_stack) {
@@ -331,6 +371,7 @@
             container.appendChild(filaDiv);
           });
           break;
+
         case 'collage_libre':
           container.className = "animate-fadeIn";
           const canvas = document.createElement('div');
@@ -352,9 +393,10 @@
           }
           container.appendChild(canvas);
           break;
+
         default:
           container.className = "text-lg leading-relaxed text-zinc-300 font-light font-serif whitespace-normal space-y-4 animate-fadeIn";
-          container.innerHTML = textoSeguro;
+          container.innerHTML = rawText.replace(/\\n/g, '<br>').replace(/\n/g, '<br>');
           break;
       }
     }
