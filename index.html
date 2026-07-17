@@ -50,6 +50,17 @@
             white-space: nowrap;
             transition: all 0.3s ease;
         }
+
+        /* Estilo estético para los epígrafes/citas dentro del poema */
+        #poemBodyContainer blockquote {
+            font-size: 0.875rem;            /* Reduce el tamaño aproximadamente 2 puntos (de text-lg a text-sm) */
+            padding-left: 1.5rem;           /* Añade la sangría al lado izquierdo */
+            border-left: 2px solid #3f3f46;  /* Una línea sutil gris vertical que refuerza visualmente la sangría */
+            color: #a1a1aa;                 /* Atenúa un poco el color para darle un aire más elegante y clásico */
+            margin-bottom: 1.5rem;          /* Separa el epígrafe del cuerpo del poema */
+            font-style: italic;             /* Convierte el bloque en cursiva para diferenciarlo aún más */
+            display: block;                 /* Garantiza que se comporte como un bloque independiente */
+        }
     </style>
 </head>
 <body class="bg-[#0B0B0C] text-[#E4E4E7] selection:bg-amber-950 selection:text-amber-200">
@@ -164,10 +175,10 @@
       document.getElementById('gridView').classList.add('hidden');
       document.getElementById('readView').classList.remove('hidden');
       document.getElementById('viewText').textContent = 'VER SECCIONES';
-     
+      
       // 1. Renderizar Cabecera de Metadatos
       document.getElementById('poemBookLabel').textContent = poema.book_title || 'EL REINO';
-     
+      
       // Colores de borde y etiqueta dinámicos según el libro
       let bookTextColor = 'text-amber-500';
       if (poema.book === 'primavera-extramuros') {
@@ -175,7 +186,7 @@
       } else if (poema.book === 'orbita-rota') {
         bookTextColor = 'text-cyan-400';
       }
-     
+      
       document.getElementById('poemBookLabel').className = `font-mono text-xs uppercase tracking-widest font-bold ${bookTextColor}`;
       document.getElementById('poemRenderBadge').textContent = `render: ${poema.tipo_render || 'estandar'}`;
       // 2. Renderizar Título del Poema
@@ -187,10 +198,11 @@
       const container = document.getElementById('poemBodyContainer');
       container.innerHTML = ''; // Limpiamos el contenedor
       switch (poema.tipo_render) {
-       
+        
         case 'estandar':
         case 'tradicional':
-          container.className = "text-lg leading-relaxed text-zinc-300 font-light font-serif whitespace-pre-line space-y-4";
+          // SOLUCIÓN: Cambiado 'whitespace-pre-line' por 'whitespace-normal' para permitir que el estilo del blockquote se aplique correctamente sin romper la estructura HTML
+          container.className = "text-lg leading-relaxed text-zinc-300 font-light font-serif whitespace-normal space-y-4";
           container.innerHTML = textoSeguro;
           break;
         case 'preformateado':
@@ -200,12 +212,12 @@
           break;
         case 'tabular_grid':
           container.className = "flex flex-col gap-4 font-mono text-base text-cyan-100/90";
-         
+          
           const lineas = rawText.split('\\n');
           lineas.forEach(linea => {
             const columnas = linea.split('||');
             const filaDiv = document.createElement('div');
-           
+            
             if (poema.metadatos_diseno && poema.metadatos_diseno.mobile_stack) {
               filaDiv.className = "flex flex-col md:grid md:grid-cols-2 gap-4 border-l-2 border-zinc-800 md:border-l-0 pl-3 md:pl-0";
             } else {
@@ -222,7 +234,7 @@
           break;
         case 'collage_libre':
           container.className = "";
-         
+          
           const canvas = document.createElement('div');
           canvas.className = "collage-canvas rounded-xl shadow-inner shadow-black";
           canvas.style.aspectRatio = (poema.metadatos_diseno && poema.metadatos_diseno.aspect_ratio) || "1/1";
@@ -243,7 +255,7 @@
           container.appendChild(canvas);
           break;
         default:
-          container.className = "text-lg leading-relaxed text-zinc-300 font-light font-serif whitespace-pre-line space-y-4";
+          container.className = "text-lg leading-relaxed text-zinc-300 font-light font-serif whitespace-normal space-y-4";
           container.innerHTML = textoSeguro;
           break;
       }
@@ -263,7 +275,7 @@
         }
 
         const card = document.createElement('div');
-       
+        
         // Asignar colores de borde decorativos según el tipo de libro
         let borderHoverColor = 'hover:border-amber-500/40';
         let badgeColor = 'text-amber-500';
@@ -275,7 +287,7 @@
           badgeColor = 'text-cyan-400';
         }
         card.className = `bg-zinc-950 border border-zinc-900 p-6 rounded-2xl transition-all cursor-pointer group ${borderHoverColor}`;
-       
+        
         // Formatear extracto de contenido de forma limpia
         const rawContent = poema.body_raw ? String(poema.body_raw) : '';
         const extracto = rawContent.replace(/\\n/g, ' ').replace(/\n/g, ' ').substring(0, 95) + '...';
@@ -409,7 +421,7 @@
           </div>
         `;
       });
-     
+      
       container.scrollTop = container.scrollHeight;
     }
     function addComment() {
@@ -419,7 +431,7 @@
       const text = textField.value.trim();
       if (!text) return;
       const commentId = 'comment_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-     
+      
       globalCommentsNode.get(commentId).put({
         user: user,
         text: text,
