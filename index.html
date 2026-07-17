@@ -350,20 +350,56 @@
         console.error("Error al conectar con Supabase:", err.message);
       }
     }
-    function decodeBinary() {
+
+    // --- NUEVA FUNCIÓN DE DESCIFRADO DINÁMICO ---
+    async function decodeBinary() {
       const input = document.getElementById('binaryInput').value.trim();
       const resultDiv = document.getElementById('binaryResult');
+      
+      if (!input) return;
+      
       resultDiv.classList.remove('hidden');
-      if (input === "0000000100101010") {
-        resultDiv.innerHTML = `<span class="text-cyan-400">✓ TRANSMISIÓN ENCONTRADA:</span> Abriendo fragmento de Sofonías...`;
-        selectPoem('sofonias_1');
-      } else if (input === "00001010") {
-        resultDiv.innerHTML = `<span class="text-amber-400">⚡ EPÍGRAFE DESBLOQUEADO:</span> Has accedido a la raíz de la memoria.`;
-        selectPoem('epigrafe_oculto');
-      } else {
-        resultDiv.innerHTML = `<span class="text-red-400">✗ ERROR DE FLUJO:</span> Código ausente en la memoria de Sofonías.`;
+      resultDiv.innerHTML = `<span class="text-amber-500 animate-pulse">⚡ PROCESANDO CÓDIGO...</span>`;
+
+      try {
+        // Hacemos la consulta a la base de datos buscando coincidencia exacta en binary_code
+        const { data, error } = await supabaseClient
+          .from('poemas')
+          .select('*')
+          .eq('binary_code', input)
+          .single();
+
+        if (error || !data) {
+          // Si Supabase no encuentra coincidencia
+          resultDiv.innerHTML = `<span class="text-red-400">✗ ERROR DE FLUJO:</span> Código ausente en la memoria de Sofonías.`;
+          return;
+        }
+
+        // Si lo encuentra, lo metemos dinámicamente al catálogo temporal para poder visualizarlo
+        const keyMap = data.key || 'temp_unlocked_poem';
+        catalog[keyMap] = {
+          title: data.titulo,
+          book: data.book,
+          book_title: data.book,
+          tipo_render: data.tipo_render,
+          body_raw: data.contenido,
+          binary_code: data.binary_code,
+          is_hidden: data.is_hidden,
+          metadatos_diseno: typeof data.metadatos_diseno === 'string'
+            ? JSON.parse(data.metadatos_diseno)
+            : (data.metadatos_diseno || {})
+        };
+
+        // Informamos del éxito y renderizamos automáticamente el poema desbloqueado
+        resultDiv.innerHTML = `<span class="text-cyan-400">✓ TRANSMISIÓN ENCONTRADA:</span> Abriendo fragmento descifrado...`;
+        selectPoem(keyMap);
+
+      } catch (err) {
+        console.error("Error al descifrar:", err.message);
+        resultDiv.innerHTML = `<span class="text-red-400">✗ ERROR DE RED:</span> Falló la conexión con la memoria de Sofonías.`;
       }
     }
+
     // --- BASE DE DATOS MULTIUSUARIO EN TIEMPO REAL (GunDB) ---
     const gun = Gun([
       'https://gun-manhattan.herokuapp.com/gun',
