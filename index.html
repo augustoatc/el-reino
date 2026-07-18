@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     
-    <script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+    <!-- Cargamos únicamente Supabase (GunDB eliminado por completo) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = {
@@ -196,7 +196,148 @@
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
     let catalog = {};
+    let listaComentariosCache = [];
 
+    // INICIALIZADOR AL CARGAR LA PÁGINA
+    window.addEventListener('DOMContentLoaded', () => {
+        fetchPoemsFromSupabase();
+        initVisitCounter();
+        loadComments();
+    });
+
+    // =================================================================
+    // CONTADOR DE HABITANTES CON LOCALSTORAGE Y REALTIME UNIFICADO
+    // =================================================================
+    async function initVisitCounter() {
+      try {
+        let { data, error } = await supabaseClient
+          .from('Contador')
+          .select('visitas')
+          .eq('id', 1)
+          .single();
+
+        if (error) throw error;
+        let totalVisitas = data ? data.visitas : 0;
+
+        if (!localStorage.getItem('visited_global_user')) {
+          localStorage.setItem('visited_global_user', 'true');
+          totalVisitas = totalVisitas + 1;
+
+          await supabaseClient
+            .from('Contador')
+            .update({ visitas: totalVisitas })
+            .eq('id', 1);
+        }
+
+        document.getElementById('visitCounter').textContent = String(totalVisitas).padStart(4, '0');
+
+        supabaseClient
+          .channel('cambios-contador')
+          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'Contador', filter: 'id=eq.1' }, payload => {
+            if (payload.new && typeof payload.new.visitas === 'number') {
+              document.getElementById('visitCounter').textContent = String(payload.new.visitas).padStart(4, '0');
+            }
+          })
+          .subscribe();
+
+      } catch (err) {
+        console.error("Error en el contador de Supabase:", err.message);
+        document.getElementById('visitCounter').textContent = "0001";
+      }
+    }
+
+    // =================================================================
+    // SISTEMA REALTIME DE COMENTARIOS (ECOS)
+    // =================================================================
+    async function loadComments() {
+      try {
+        let { data, error } = await supabaseClient
+          .from('Comentarios')
+          .select('*')
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        listaComentariosCache = data || [];
+        renderComments();
+
+        supabaseClient
+          .channel('ecos-comentarios-live')
+          .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Comentarios' }, payload => {
+            if (payload.new) {
+              if (!listaComentariosCache.some(c => c.id === payload.new.id)) {
+                listaComentariosCache.push(payload.new);
+                renderComments();
+              }
+            }
+          })
+          .subscribe();
+
+      } catch (err) {
+        console.error("Error al cargar comentarios de Supabase:", err.message);
+      }
+    }
+
+    function renderComments() {
+      const container = document.getElementById('commentsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+        
+      if (listaComentariosCache.length === 0) {
+        const placeholder = document.createElement('div');
+        placeholder.className = "bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80";
+        placeholder.innerHTML = `
+          <span class="font-mono text-amber-500 text-[10px] tracking-wider uppercase">SISTEMA</span>
+          <p class="text-zinc-300 mt-1 font-sans">No hay ecos en la red aún. Sé el primero en escribir...</p>
+        `;
+        container.appendChild(placeholder);
+        return;
+      }
+      
+      const fragment = document.createDocumentFragment();
+      listaComentariosCache.forEach(c => {
+        const commentDiv = document.createElement('div');
+        commentDiv.className = "bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80 animate-fadeIn";
+        
+        const headerSpan = document.createElement('span');
+        headerSpan.className = "font-mono text-amber-500 text-[10px] tracking-wider uppercase";
+        headerSpan.textContent = c.user || "Anónimo";
+        
+        const bodyP = document.createElement('p');
+        bodyP.className = "text-zinc-300 mt-1 font-sans";
+        bodyP.textContent = c.text;
+        
+        commentDiv.appendChild(headerSpan);
+        commentDiv.appendChild(bodyP);
+        fragment.appendChild(commentDiv);
+      });
+      
+      container.appendChild(fragment);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function addComment() {
+      const userField = document.getElementById('commentUser');
+      const textField = document.getElementById('commentText');
+      const user = userField.value.trim() || "Anónimo";
+      const text = textField.value.trim();
+      
+      if (!text) return;
+      
+      try {
+        const { error } = await supabaseClient
+          .from('Comentarios')
+          .insert([{ user: user, text: text }]);
+
+        if (error) throw error;
+        textField.value = ''; 
+      } catch (err) {
+        console.error("Error al enviar el comentario:", err.message);
+      }
+    }
+
+    // =================================================================
+    // NAVEGACIÓN Y MOTOR DE RENDER DE POEMAS
+    // =================================================================
     function changeActiveView(newView) {
       activeView = newView;
       
@@ -266,12 +407,9 @@
       changeActiveView('read');
     }
 
-    // FUNCIÓN ESCÁNER INTEGRADA, OPTIMIZADA Y COMPATIBLE
     function aplicarSangriaFrancesa(container) {
       const versosDOM = container.querySelectorAll('p');
-
       versosDOM.forEach(verso => {
-        // 1. Creamos un clon invisible absoluto
         const clon = verso.cloneNode(true);
         clon.style.position = 'absolute';
         clon.style.whiteSpace = 'nowrap';
@@ -279,12 +417,9 @@
         clon.style.width = 'auto';
         document.body.appendChild(clon);
         
-        // 2. Evaluamos si el ancho en pantalla es menor que su longitud natural sin romper
         if (verso.offsetWidth < clon.offsetWidth) {
           verso.classList.add('sangria-francesa-aplicada');
         }
-        
-        // Limpieza de memoria
         document.body.removeChild(clon);
       });
     }
@@ -320,28 +455,23 @@
       }
       
       tituloHTML.textContent = poema.title || 'SIN TÍTULO';
-      
       const rawText = poema.body_raw ? String(poema.body_raw) : '';
-      
       container.innerHTML = ''; 
       
       switch (renderActual) {
         case 'estandar':
         case 'tradicional':
           container.className = "text-lg leading-relaxed text-zinc-300 font-light font-serif whitespace-normal space-y-4 animate-fadeIn";
-          
-          // Mapeamos las líneas del poema convirtiéndolas en elementos <p> individuales para el escáner
           const fragmentoEstandar = document.createDocumentFragment();
           const lineasEstandar = rawText.split(/\\n|\n/);
           
           lineasEstandar.forEach(linea => {
             const pVerso = document.createElement('p');
-            pVerso.innerHTML = linea.trim() || '&nbsp;'; // Mantiene líneas vacías estructurales
+            pVerso.innerHTML = linea.trim() || '&nbsp;';
             fragmentoEstandar.appendChild(pVerso);
           });
           
           container.appendChild(fragmentoEstandar);
-          // Ejecutamos el detector de sangría francesa
           aplicarSangriaFrancesa(container);
           break;
 
@@ -517,124 +647,6 @@
         resultDiv.innerHTML = `<span class="text-red-400">✗ ERROR DE RED:</span> Falló la conexión con la memoria de Sofonías.`;
       }
     }
-
-    const gun = Gun([
-      'https://gun-manhattan.herokuapp.com/gun',
-      'https://gundb.co/gun'
-    ]);
-    const globalCommentsNode = gun.get('el_reino_toledo_comments_v2');
-    
-    async function initVisitCounter() {
-      try {
-        let { data, error } = await supabaseClient
-          .from('Contador')
-          .select('visitas')
-          .eq('id', 1)
-          .single();
-
-        if (error) throw error;
-        let totalVisitas = data ? data.visitas : 0;
-
-        if (!sessionStorage.getItem('visited_global')) {
-          sessionStorage.setItem('visited_global', 'true');
-          totalVisitas = totalVisitas + 1;
-
-          await supabaseClient
-            .from('Contador')
-            .update({ visitas: totalVisitas })
-            .eq('id', 1);
-        }
-
-        document.getElementById('visitCounter').textContent = String(totalVisitas).padStart(4, '0');
-
-        supabaseClient
-          .channel('cambios-contador')
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'Contador', filter: 'id=eq.1' }, payload => {
-            if (payload.new && typeof payload.new.visitas === 'number') {
-              document.getElementById('visitCounter').textContent = String(payload.new.visitas).padStart(4, '0');
-            }
-          })
-          .subscribe();
-
-      } catch (err) {
-        console.error("Error en el contador de Supabase:", err.message);
-        document.getElementById('visitCounter').textContent = "0001";
-      }
-    }
-    
-    const localCommentsCache = {};
-    function loadComments() {
-      globalCommentsNode.map().on((comment, id) => {
-        if (comment && comment.user && comment.text) {
-          localCommentsCache[id] = comment;
-          renderComments();
-        }
-      });
-    }
-
-    function renderComments() {
-      const container = document.getElementById('commentsContainer');
-      if (!container) return;
-      container.innerHTML = '';
-      
-      const sortedComments = Object.values(localCommentsCache)
-        .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-        
-      if (sortedComments.length === 0) {
-        const placeholder = document.createElement('div');
-        placeholder.className = "bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80";
-        placeholder.innerHTML = `
-          <span class="font-mono text-amber-500 text-[10px] tracking-wider uppercase">SISTEMA</span>
-          <p class="text-zinc-300 mt-1 font-sans">No hay ecos en la red aún. Sé el primero en escribir...</p>
-        `;
-        container.appendChild(placeholder);
-        return;
-      }
-      
-      const fragment = document.createDocumentFragment();
-      sortedComments.forEach(c => {
-        const commentDiv = document.createElement('div');
-        commentDiv.className = "bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80 animate-fadeIn";
-        
-        const headerSpan = document.createElement('span');
-        headerSpan.className = "font-mono text-amber-500 text-[10px] tracking-wider uppercase";
-        headerSpan.textContent = c.user;
-        
-        const bodyP = document.createElement('p');
-        bodyP.className = "text-zinc-300 mt-1 font-sans";
-        bodyP.textContent = c.text;
-        
-        commentDiv.appendChild(headerSpan);
-        commentDiv.appendChild(bodyP);
-        fragment.appendChild(commentDiv);
-      });
-      
-      container.appendChild(fragment);
-      container.scrollTop = container.scrollHeight;
-    }
-
-    function addComment() {
-      const userField = document.getElementById('commentUser');
-      const textField = document.getElementById('commentText');
-      const user = userField.value.trim() || "Anónimo";
-      const text = textField.value.trim();
-      if (!text) return;
-      const commentId = 'comment_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      
-      globalCommentsNode.get(commentId).put({
-        user: user,
-        text: text,
-        timestamp: Date.now()
-      });
-      textField.value = '';
-    }
-    
-    window.onload = function() {
-      initVisitCounter();
-      loadComments();
-      fetchPoemsFromSupabase();
-      changeActiveView('read');
-    };
   </script>
 </body>
 </html>
