@@ -591,8 +591,7 @@
         
         const nuevoCatalogo = {};
         data.forEach(poema => {
-          if (poema.binary_code || poema.is_hidden === true) return; 
-
+          // Guardamos TODO en el catálogo para que esté accesible al descifrar o buscar por key.
           nuevoCatalogo[poema.key] = {
             title: poema.titulo,
             book: poema.book,
@@ -608,12 +607,12 @@
         });
         
         catalog = nuevoCatalogo;
-        dibujarGridDePoemas();
+        dibujarGridDePoemas(); // La función encargada del grid discriminará cuáles mostrar visualmente.
         
         if (catalog['silencio']) {
           selectPoem('silencio');
         } else {
-          const keys = Object.keys(catalog);
+          const keys = Object.keys(catalog).filter(k => !catalog[k].binary_code && !catalog[k].is_hidden);
           if (keys.length > 0) selectPoem(keys[0]);
         }
 
@@ -622,9 +621,6 @@
       }
     }
 
-    // =================================================================
-    // ENTRADA DIRECTA AL DESCIFRAR EL CÓDIGO (SIN PASO INTERMEDIO)
-    // =================================================================
     async function decodeBinary() {
       const codeInput = document.getElementById('binaryInput').value.trim();
       const resultDiv = document.getElementById('binaryResult');
@@ -642,7 +638,7 @@
         if (data && data.length > 0) {
           const poemaOculto = data[0];
           
-          // Guardamos temporalmente el poema descifrado en el catálogo global de renderizado
+          // Registramos/Actualizamos el poema descifrado directamente en el catálogo local
           catalog[poemaOculto.key] = {
             title: poemaOculto.titulo,
             book: poemaOculto.book,
@@ -650,27 +646,34 @@
             tipo_render: poemaOculto.tipo_render,
             body_raw: poemaOculto.contenido,
             binary_code: poemaOculto.binary_code,
-            is_hidden: poemaOculto.is_hidden,
+            is_hidden: false, // Forzamos visibilidad local
             metadatos_diseno: typeof poemaOculto.metadatos_diseno === 'string'
               ? JSON.parse(poemaOculto.metadatos_diseno)
               : poemaOculto.metadatos_diseno
           };
           
-          // Limpiamos la vista de terminal y saltamos directo a la lectura completa
-          document.getElementById('binaryInput').value = '';
-          resultDiv.classList.add('hidden');
-          resultDiv.innerHTML = '';
+          // Feedback visual de éxito
+          resultDiv.classList.remove('hidden', 'text-red-400');
+          resultDiv.classList.add('text-emerald-400');
+          resultDiv.textContent = `Código [${codeInput}] aceptado. Descifrando "${poemaOculto.titulo}"...`;
           
-          selectPoem(poemaOculto.key);
-          
+          // Redirección directa al poema roto el cifrado tras 1.2 segundos
+          setTimeout(() => {
+             selectPoem(poemaOculto.key);
+             document.getElementById('binaryInput').value = '';
+             resultDiv.classList.add('hidden');
+          }, 1200);
+
         } else {
-          resultDiv.classList.remove('hidden');
-          resultDiv.innerHTML = `<span class="text-red-500 font-bold">ERROR: CÓDIGO INVÁLIDO</span><p class="text-[11px] text-zinc-500 mt-1">El descifrado falló. Revisa los bits del libro físico.</p>`;
+          resultDiv.classList.remove('hidden', 'text-emerald-400');
+          resultDiv.classList.add('text-red-400');
+          resultDiv.textContent = `Código binario inválido o inexistente en el Reino.`;
         }
       } catch (err) {
-        console.error("Error al decodificar binario:", err.message);
+        console.error("Error en la terminal de descifrado:", err.message);
         resultDiv.classList.remove('hidden');
-        resultDiv.innerHTML = `<span class="text-red-500">Error de comunicación con el servidor.</span>`;
+        resultDiv.classList.add('text-red-400');
+        resultDiv.textContent = `Error del sistema: ${err.message}`;
       }
     }
   </script>
