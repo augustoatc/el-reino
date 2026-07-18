@@ -146,7 +146,8 @@
           </div>
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            <span class="font-mono text-xs text-zinc-500">HABITANTES: <span id="visitCounter" class="text-amber-500 font-bold">0000</span></span>
+            <!-- Corregido a 8 dígitos visuales por defecto -->
+            <span class="font-mono text-xs text-zinc-500">HABITANTES: <span id="visitCounter" class="text-amber-500 font-bold">00000050</span></span>
           </div>
         </div>
 
@@ -206,7 +207,7 @@
     });
 
     // =================================================================
-    // CONTADOR DE HABITANTES CON LOCALSTORAGE Y REALTIME UNIFICADO
+    // CONTADOR DE HABITANTES CON LOCALSTORAGE Y REALTIME UNIFICADO (8 DÍGITOS - INICIO EN 50)
     // =================================================================
     async function initVisitCounter() {
       try {
@@ -217,7 +218,9 @@
           .single();
 
         if (error) throw error;
-        let totalVisitas = data ? data.visitas : 0;
+        
+        // Si no existen visitas en la BD o es menor a 50, forzamos a que empiece en 50
+        let totalVisitas = data && data.visitas >= 50 ? data.visitas : 50;
 
         if (!localStorage.getItem('visited_global_user')) {
           localStorage.setItem('visited_global_user', 'true');
@@ -229,20 +232,23 @@
             .eq('id', 1);
         }
 
-        document.getElementById('visitCounter').textContent = String(totalVisitas).padStart(4, '0');
+        // Modificado a padStart(8, '0') para forzar los 8 dígitos
+        document.getElementById('visitCounter').textContent = String(totalVisitas).padStart(8, '0');
 
         supabaseClient
           .channel('cambios-contador')
           .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'Contador', filter: 'id=eq.1' }, payload => {
             if (payload.new && typeof payload.new.visitas === 'number') {
-              document.getElementById('visitCounter').textContent = String(payload.new.visitas).padStart(4, '0');
+              let realtimeVisitas = payload.new.visitas < 50 ? 50 : payload.new.visitas;
+              document.getElementById('visitCounter').textContent = String(realtimeVisitas).padStart(8, '0');
             }
           })
           .subscribe();
 
       } catch (err) {
         console.error("Error en el contador de Supabase:", err.message);
-        document.getElementById('visitCounter').textContent = "0001";
+        // Fallback en caso de error empezando desde 50 con 8 dígitos
+        document.getElementById('visitCounter').textContent = "00000050";
       }
     }
 
