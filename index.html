@@ -129,7 +129,7 @@
           </div>
           <div id="poemContent" class="space-y-6">
             <h2 id="poemTitle" class="text-3xl lg:text-4xl font-light tracking-wide text-zinc-100 uppercase">CARGANDO...</h2>
-            <div id="poemBodyContainer" class="text-lg leading-relaxed text-zinc-300 font-light"></div>
+            <div id="poemBodyContainer" class="text-lg text-zinc-300 font-light"></div>
           </div>
         </div>
       </main>
@@ -461,13 +461,18 @@
       switch (renderActual) {
         case 'estandar':
         case 'tradicional':
-          container.className = "text-lg leading-relaxed text-zinc-300 font-light font-serif whitespace-normal space-y-4 animate-fadeIn";
+          container.className = "text-lg leading-normal text-zinc-300 font-light font-serif whitespace-normal space-y-1.5 animate-fadeIn";
           const fragmentoEstandar = document.createDocumentFragment();
           const lineasEstandar = rawText.split(/\\n|\n/);
           
           lineasEstandar.forEach(linea => {
             const pVerso = document.createElement('p');
-            pVerso.innerHTML = linea.trim() || '&nbsp;';
+            if (!linea.trim()) {
+              pVerso.innerHTML = '&nbsp;';
+              pVerso.className = 'h-3'; 
+            } else {
+              pVerso.innerHTML = linea.trim();
+            }
             fragmentoEstandar.appendChild(pVerso);
           });
           
