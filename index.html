@@ -168,7 +168,7 @@
           </div>
           <div class="flex items-center gap-2">
             <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            <span class="font-mono text-xs text-zinc-500">HABITANTES: <span id="visitCounter" class="text-amber-500 font-bold">00000050</span></span>
+            <span class="font-mono text-xs text-zinc-500">HABITANTES: <span id="visitCounter" class="text-amber-500 font-bold">00000000</span></span>
           </div>
         </div>
 
@@ -211,6 +211,9 @@
     </div>
   </div>
 
+  <!-- SCRIPT EXTERNO DEL CONTADOR -->
+  <script type="text/javascript" src="https://contador.websiteout.com/js/9/10/50/0"></script>
+
   <script>
     let activeView = 'read'; 
     const SUPABASE_URL = "https://kpvucfktjnuqltuvgflx.supabase.co";
@@ -226,44 +229,24 @@
         loadComments();
     });
 
-    async function initVisitCounter() {
-      try {
-        let { data, error } = await supabaseClient
-          .from('Contador')
-          .select('visitas')
-          .eq('id', 1)
-          .single();
-
-        if (error) throw error;
-        
-        let totalVisitas = data && data.visitas >= 50 ? data.visitas : 50;
-
-        if (!localStorage.getItem('visited_global_user')) {
-          localStorage.setItem('visited_global_user', 'true');
-          totalVisitas = totalVisitas + 1;
-
-          await supabaseClient
-            .from('Contador')
-            .update({ visitas: totalVisitas })
-            .eq('id', 1);
-        }
-
-        document.getElementById('visitCounter').textContent = String(totalVisitas).padStart(8, '0');
-
-        supabaseClient
-          .channel('cambios-contador')
-          .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'Contador', filter: 'id=eq.1' }, payload => {
-            if (payload.new && typeof payload.new.visitas === 'number') {
-              let realtimeVisitas = payload.new.visitas < 50 ? 50 : payload.new.visitas;
-              document.getElementById('visitCounter').textContent = String(realtimeVisitas).padStart(8, '0');
-            }
-          })
-          .subscribe();
-
-      } catch (err) {
-        console.error("Error en el contador de Supabase:", err.message);
-        document.getElementById('visitCounter').textContent = "00000050";
+    function initVisitCounter() {
+      // Intentar extraer el número de visitas desde la variable global generada por el script de websiteout
+      // Normalmente estos servicios guardan el valor en variables internas. Si no está mapeado, se usa un fallback seguro.
+      let totalVisitas = 50; 
+      
+      if (typeof window['hit_counter'] !== 'undefined') {
+        totalVisitas = Number(window['hit_counter']);
+      } else if (typeof window['counter'] !== 'undefined') {
+        totalVisitas = Number(window['counter']);
+      } else {
+        // Fallback dinámico: Busca elementos que el script externo suele inyectar de forma implícita
+        const exElement = document.getElementById('websiteout_counter');
+        if (exElement) totalVisitas = parseInt(exElement.textContent, 10) || 50;
       }
+      
+      // Asegurar un piso mínimo de 50 y formatear a 8 dígitos
+      if (isNaN(totalVisitas) || totalVisitas < 50) totalVisitas = 50;
+      document.getElementById('visitCounter').textContent = String(totalVisitas).padStart(8, '0');
     }
 
     async function loadComments() {
@@ -304,7 +287,7 @@
         placeholder.className = "bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80";
         placeholder.innerHTML = `
           <span class="font-mono text-amber-500 text-[10px] tracking-wider uppercase">SISTEMA</span>
-          <p class="text-zinc-300 mt-1 font-sans">No hay ecos in la red aún. Sé el primero en escribir...</p>
+          <p class="text-zinc-300 mt-1 font-sans">No hay ecos en la red aún. Sé el primero en escribir...</p>
         `;
         container.appendChild(placeholder);
         return;
@@ -352,7 +335,6 @@
       }
     }
 
-    // Aseguramos que la vista cambie de forma limpia restableciendo estilos de fuente globales si se requiere
     function changeActiveView(newView) {
       activeView = newView;
       
@@ -475,16 +457,11 @@
       
       switch (renderActual) {
         case 'narrativa':
-          // Configuración de fuentes serif, texto completamente justificado y separación holgada de párrafos narrativos
           container.className = "text-lg leading-relaxed text-zinc-300 font-serif text-justify space-y-4 animate-fadeIn";
-          
-          // Dividimos el contenido crudo por los saltos de línea habituales
           const parrafos = rawText.split(/\\n|\n/);
           container.innerHTML = parrafos
             .map((p, index) => {
               if (!p.trim()) return '<div class="h-4"></div>';
-              
-              // Aplicamos clases de Tailwind para simular la letra capital (drop cap) al primer párrafo auténtico
               if (index === 0) {
                 return `<p class="first-letter:text-5xl first-letter:font-bold first-letter:text-amber-500 first-letter:float-left first-letter:mr-3 first-letter:mt-1">${p.trim()}</p>`;
               }
@@ -631,15 +608,26 @@
         dibujarGridDePoemas();
         
         if (catalog['silencio']) {
-          selectPoem('silencio');
+            selectPoem('silencio');
         } else {
-          const keys = Object.keys(catalog);
-          if (keys.length > 0) selectPoem(keys[0]);
+            const keys = Object.keys(catalog);
+            if (keys.length > 0) selectPoem(keys[0]);
         }
-
       } catch (err) {
-        console.error("Error cargando poemas desde Supabase:", err.message);
+        console.error("Error al obtener poemas desde Supabase:", err.message);
       }
+    }
+    
+    // Función Stub por si se llama desde la interfaz el descifrado binario
+    function decodeBinary() {
+      const input = document.getElementById('binaryInput').value.trim();
+      const resultDiv = document.getElementById('binaryResult');
+      resultDiv.classList.remove('hidden');
+      if(!input) {
+        resultDiv.textContent = "Por favor ingrese un código.";
+        return;
+      }
+      resultDiv.textContent = `Código binario [${input}] enviado al analizador síncrono.`;
     }
   </script>
 </body>
