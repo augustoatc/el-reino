@@ -554,10 +554,11 @@
         
         const rawContent = poema.body_raw ? String(poema.body_raw) : '';
         const extracto = rawContent.replace(/\\n/g, ' ').replace(/\n/g, ' ').substring(0, 95) + '...';
+        
         card.innerHTML = `
           <div class="font-mono text-xs ${badgeColor} mb-2 uppercase tracking-wider">${poema.book_title || 'EL REINO'}</div>
           <h3 class="text-xl font-bold text-zinc-100 group-hover:text-zinc-50 transition-colors uppercase">${poema.title || 'Sin Título'}</h3>
-          <p class="text-zinc-500 text-sm mt-2 line-clamp-2 italic font-light">${extracto || 'Sin contenido disponible.'}</p>
+          <p class="font-mono text-zinc-500 text-[11px] mt-3 line-clamp-2 leading-relaxed tracking-wide">${extracto || 'Sin contenido disponible.'}</p>
         `;
         card.onclick = () => { selectPoem(key); };
         contenedor.appendChild(card);
