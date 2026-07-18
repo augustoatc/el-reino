@@ -148,7 +148,7 @@
             Su activa participación en el ecosistema cultural lo ha llevado a ser jurado para el Ministerio de Cultura, Gobiernos Regionales y UGELs de Arequipa y Tacna en certámenes como el Concurso Nacional de Oratoria (2024), PERÚ LEE (2023), el Premio José María Arguedas (2021 y 2023) y Poeta Joven (2018-2019).
           </p>
           <p class="text-justify">
-            Como poeta, obtuvo el primer puesto en los concursos Casa Basadre (2008) y Casa Zela (2009), y que many años después decidió publicar los títulos de los poemarios Primavera Extramuros (2018), Órbita Rota (2019) y Los Extramuros (2024). Además, ha colaborado en las revistas Cinosargo, Groenlandia y Delirium Tremens, y fue integrado en la antología Buganvilla (2015).
+            Como poeta, obtuvo el primer puesto en los concursos Casa Basadre (2008) y Casa Zela (2009), y que años después decidió publicar los títulos de los poemarios Primavera Extramuros (2018), Órbita Rota (2019) y Los Extramuros (2024). Además, ha colaborado en las revistas Cinosargo, Groenlandia y Delirium Tremens, y fue integrado en la antología Buganvilla (2015).
           </p>
           <p class="text-justify">
             Siempre dispuesto a compartir saberes, vuelca su experiencia en espacios académicos y de divulgación; en 2024, dictó charlas y talleres en el FESTILEC, el Centro Cultural Liber Forti y la Universidad Nacional Jorge Basadre Grohmann (bajo Resolución N°8149-2024-FECH). Esta labor formativa se complementa con el diseño de talleres de creación de textos desde 2018 y su constante participación en encuentros poéticos como los recitales.
@@ -304,7 +304,7 @@
         placeholder.className = "bg-zinc-900/60 p-3 rounded-xl border border-zinc-800/80";
         placeholder.innerHTML = `
           <span class="font-mono text-amber-500 text-[10px] tracking-wider uppercase">SISTEMA</span>
-          <p class="text-zinc-300 mt-1 font-sans">No hay ecos en la red aún. Sé el primero en escribir...</p>
+          <p class="text-zinc-300 mt-1 font-sans">No hay ecos in la red aún. Sé el primero en escribir...</p>
         `;
         container.appendChild(placeholder);
         return;
@@ -352,6 +352,7 @@
       }
     }
 
+    // Aseguramos que la vista cambie de forma limpia restableciendo estilos de fuente globales si se requiere
     function changeActiveView(newView) {
       activeView = newView;
       
@@ -473,6 +474,25 @@
       container.innerHTML = ''; 
       
       switch (renderActual) {
+        case 'narrativa':
+          // Configuración de fuentes serif, texto completamente justificado y separación holgada de párrafos narrativos
+          container.className = "text-lg leading-relaxed text-zinc-300 font-serif text-justify space-y-4 animate-fadeIn";
+          
+          // Dividimos el contenido crudo por los saltos de línea habituales
+          const parrafos = rawText.split(/\\n|\n/);
+          container.innerHTML = parrafos
+            .map((p, index) => {
+              if (!p.trim()) return '<div class="h-4"></div>';
+              
+              // Aplicamos clases de Tailwind para simular la letra capital (drop cap) al primer párrafo auténtico
+              if (index === 0) {
+                return `<p class="first-letter:text-5xl first-letter:font-bold first-letter:text-amber-500 first-letter:float-left first-letter:mr-3 first-letter:mt-1">${p.trim()}</p>`;
+              }
+              return `<p>${p.trim()}</p>`;
+            })
+            .join('');
+          break;
+
         case 'estandar':
         case 'tradicional':
           container.className = "text-lg leading-normal text-zinc-300 font-light font-serif whitespace-normal space-y-1.5 animate-fadeIn";
@@ -619,58 +639,6 @@
 
       } catch (err) {
         console.error("Error cargando poemas desde Supabase:", err.message);
-      }
-    }
-
-    // =================================================================
-    // ENTRADA DIRECTA AL DESCIFRAR EL CÓDIGO (SIN PASO INTERMEDIO)
-    // =================================================================
-    async function decodeBinary() {
-      const codeInput = document.getElementById('binaryInput').value.trim();
-      const resultDiv = document.getElementById('binaryResult');
-      
-      if (!codeInput) return;
-      
-      try {
-        const { data, error } = await supabaseClient
-          .from('poemas')
-          .select('*')
-          .eq('binary_code', codeInput);
-          
-        if (error) throw error;
-        
-        if (data && data.length > 0) {
-          const poemaOculto = data[0];
-          
-          // Guardamos temporalmente el poema descifrado en el catálogo global de renderizado
-          catalog[poemaOculto.key] = {
-            title: poemaOculto.titulo,
-            book: poemaOculto.book,
-            book_title: poemaOculto.book,
-            tipo_render: poemaOculto.tipo_render,
-            body_raw: poemaOculto.contenido,
-            binary_code: poemaOculto.binary_code,
-            is_hidden: poemaOculto.is_hidden,
-            metadatos_diseno: typeof poemaOculto.metadatos_diseno === 'string'
-              ? JSON.parse(poemaOculto.metadatos_diseno)
-              : poemaOculto.metadatos_diseno
-          };
-          
-          // Limpiamos la vista de terminal y saltamos directo a la lectura completa
-          document.getElementById('binaryInput').value = '';
-          resultDiv.classList.add('hidden');
-          resultDiv.innerHTML = '';
-          
-          selectPoem(poemaOculto.key);
-          
-        } else {
-          resultDiv.classList.remove('hidden');
-          resultDiv.innerHTML = `<span class="text-red-500 font-bold">ERROR: CÓDIGO INVÁLIDO</span><p class="text-[11px] text-zinc-500 mt-1">El descifrado falló. Revisa los bits del libro físico.</p>`;
-        }
-      } catch (err) {
-        console.error("Error al decodificar binario:", err.message);
-        resultDiv.classList.remove('hidden');
-        resultDiv.innerHTML = `<span class="text-red-500">Error de comunicación con el servidor.</span>`;
       }
     }
   </script>
